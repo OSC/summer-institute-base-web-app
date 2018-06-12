@@ -14,7 +14,7 @@ the command line. If using a machine that has [Software Collections] you may
 want to run the following command beforehand:
 
 ```console
-$ source scl_source rh-ruby22 git19
+$ source scl_source enable rh-ruby22 git19
 ```
 
 Feel free to replace `rh-ruby22` and `git19` with whatever installation your
