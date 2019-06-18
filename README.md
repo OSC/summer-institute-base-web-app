@@ -1,4 +1,4 @@
-# Base Sinatra App for Summer Institute 2018
+# Base Sinatra App for Summer Institute 2019
 
 ![GitHub Release](https://img.shields.io/github/release/osc/ood-example-ps.svg)
 [![GitHub License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
@@ -14,10 +14,10 @@ the command line. If using a machine that has [Software Collections] you may
 want to run the following command beforehand:
 
 ```console
-$ source scl_source enable rh-ruby22 git19
+$ source scl_source enable rh-ruby24 rh-git29
 ```
 
-Feel free to replace `rh-ruby22` and `git19` with whatever installation your
+Feel free to replace `rh-ruby24` and `rh-git29` with whatever installation your
 site uses through Software Collections.
 
 1. To deploy and run this app you will need to first go to your OnDemand
@@ -31,7 +31,7 @@ site uses through Software Collections.
 2. Then clone down this app and `cd` into it:
 
    ```console
-   $ git clone git@github.com:OSC/si-18-sinatra-base.git my_app
+   $ git clone git@github.com:OSC/si-19-sinatra-base.git my_app
    Cloning into 'my_app'...
    $ cd my_app
    ```
