@@ -2,6 +2,7 @@ require "sinatra/base"
 
 class App < Sinatra::Base
   set :erb, :escape_html => true
+  enable :sessions
 
   def title
     "My App"
@@ -37,6 +38,20 @@ class App < Sinatra::Base
   post "/job" do
     jobid = "123456"
     output = Pathname.new(params['inputfile']).dirname.join('output').to_s
+
+    @flash = {info: "Job submitted!"}
+
     redirect to("/job?jobid=#{jobid}&output=#{output}")
   end
+
+  before do
+    @flashnow = session[:flash] || {}
+  end
+
+
+  after do
+    session[:flash] = @flash || {} # unless we set the flash in this request?
+  end
+
+  # Morgan I didn't think a flash message was required here :-)
 end
