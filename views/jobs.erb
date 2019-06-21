@@ -1,0 +1,7 @@
+<h1>Jobs: <%= @jobs.count %></h1>
+
+<ul>
+    <% @jobs.each do |jobid| %>
+    <li><a href="<%= url("/job?jobid=#{jobid}") %>"><%= jobid %></a></li>
+    <% end %>
+</ul>

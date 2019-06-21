@@ -1,0 +1,11 @@
+<h1>Job Details <small>for <%= @jobid %></small></h1>
+<pre><%= @jobstats %></pre>
+
+<a class="btn btn-primary" href="<%= url('/jobs') %>">Back</a>
+
+
+<pre><%= @results.inspect %></pre>
+
+<% @results.each do |img| %>
+  <img src="https://ondemand-test.osc.edu/pun/sys/files/api/v1/fs<%= img %>">
+<% end %>
