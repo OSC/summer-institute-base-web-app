@@ -48,6 +48,12 @@
 </header>
 
 <div class="container" role="main">
+  <% @flashnow.each do |type, msg| %>
+    <div class="alert alert-<%= type %>" role="alert">
+      <%= msg %>
+    </div>
+  <% end %>
+
   <%== yield %>
 </div>
 
