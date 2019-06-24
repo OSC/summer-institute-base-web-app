@@ -69,7 +69,7 @@ class App < Sinatra::Base
     # by default adapter joins error and output files
     #
     jobid = job_adapter.submit(OodCore::Job::Script.new(
-      content: File.read('/users/PZS0562/efranz/ondemand/dev/jobs/jobs/blender_render_job.sh'),
+      content: erb(:blender_render_job, layout: false, locals: params),
       accounting_id: params['account'],
       job_enviroment: { 'BLEND_FILE_PATH' => inputfile.to_s },
       workdir: inputdir.to_s
