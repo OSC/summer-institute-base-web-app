@@ -54,7 +54,7 @@ class App < Sinatra::Base
 
     # ahh - debugging this is problematic... that is where flash message is useful... you can have error msg or output msg then
     # could do "submitted job with command: ....."
-    cmd = "/opt/torque/bin/qsub -v BLEND_FILE_PATH=#{inputfile.to_s} -d #{inputdir.to_s} /users/PZS0562/efranz/ondemand/dev/jobs/jobs/blender_render_job.sh 2>&1".strip
+    cmd = "/opt/torque/bin/qsub -A #{params['account']} -v BLEND_FILE_PATH=#{inputfile.to_s} -d #{inputdir.to_s} /users/PZS0562/efranz/ondemand/dev/jobs/jobs/blender_render_job.sh 2>&1".strip
     jobid = `#{cmd}`
 
     @flash = {info: "Job submitted using command: #{cmd} with output: #{jobid}"}
