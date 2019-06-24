@@ -1,8 +1,20 @@
 require "sinatra/base"
+require "ood_core"
+require "json"
 
 class App < Sinatra::Base
   set :erb, :escape_html => true
   enable :sessions
+
+  def job_adapter
+    @job_adapter ||= OodCore::Cluster.new(id: 'owens', job: {
+      adapter: "torque",
+      host: "owens-batch.ten.osc.edu",
+      lib: "/opt/torque/lib64",
+      bin: "/opt/torque/bin",
+      version: "6.0.1"
+    }).job_adapter
+  end
 
   # flash message support
   before do
@@ -30,7 +42,9 @@ class App < Sinatra::Base
 
   get "/job" do
       @jobid = params['jobid']
-      @jobstats = `/opt/torque/bin/qstat -f #{@jobid}`
+      @jobinfo = job_adapter.info(@jobid)
+      @jobstats = JSON.pretty_generate(@jobinfo.native)
+
 
       @results = []
       if params['output'] && File.exist?(params['output'])
@@ -52,13 +66,24 @@ class App < Sinatra::Base
     inputdir = inputfile.dirname
     outputdir = inputdir.join('output')
 
-    # ahh - debugging this is problematic... that is where flash message is useful... you can have error msg or output msg then
-    # could do "submitted job with command: ....."
-    cmd = "/opt/torque/bin/qsub -A #{params['account']} -v BLEND_FILE_PATH=#{inputfile.to_s} -d #{inputdir.to_s} /users/PZS0562/efranz/ondemand/dev/jobs/jobs/blender_render_job.sh 2>&1".strip
-    jobid = `#{cmd}`
+    # by default adapter joins error and output files
+    #
+    jobid = job_adapter.submit(OodCore::Job::Script.new(
+      content: File.read('/users/PZS0562/efranz/ondemand/dev/jobs/jobs/blender_render_job.sh'),
+      accounting_id: params['account'],
+      job_enviroment: { 'BLEND_FILE_PATH' => inputfile.to_s },
+      workdir: inputdir.to_s
+    ))
 
-    @flash = {info: "Job submitted using command: #{cmd} with output: #{jobid}"}
+    @flash = {info: "Job submitted using ood_core library with job id: #{jobid}"}
 
     redirect to("/job?jobid=#{jobid}&output=#{outputdir.to_s}")
+
+    # TODO: rescue exception when submitting job
+    #
+    # rescue StandardError => e
+    #   # you lose /new unless you could rerender with query params...
+    #   @flash = {warning: "Job failed to submit using ood_core library with error msg: #{e.message}"}
+    #   redirect to("/new.erb")
   end
 end
