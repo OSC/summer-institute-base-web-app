@@ -1,11 +1,12 @@
-# Base Sinatra App for Summer Institute 2019
+# Base Sinatra App for Summer Institute
 
 ![GitHub Release](https://img.shields.io/github/release/osc/ood-example-ps.svg)
 [![GitHub License](https://img.shields.io/badge/license-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 This app is meant as a base Passenger app that runs in an [OnDemand] portal
-that uses the [Sinatra] web framework. Feel free to modify it anyway you see
-fit.
+that uses the [Sinatra] web framework for OSC's [Summer Institute].
+
+Feel free to modify it anyway you see fit.
 
 ## Deploy
 
@@ -14,11 +15,8 @@ the command line. If using a machine that has [Software Collections] you may
 want to run the following command beforehand:
 
 ```console
-$ source scl_source enable rh-ruby24 rh-git29
+$ module load ruby/2.7.3
 ```
-
-Feel free to replace `rh-ruby24` and `rh-git29` with whatever installation your
-site uses through Software Collections.
 
 1. To deploy and run this app you will need to first go to your OnDemand
    sandbox directory (if it doesn't exist, then we create it):
@@ -52,4 +50,4 @@ site uses through Software Collections.
 
 [OnDemand]: http://openondemand.org/
 [Sinatra]: http://sinatrarb.com/
-[Software Collections]: https://www.softwarecollections.org/en/
+[Summer Institute]: https://www.osc.edu/education/si
