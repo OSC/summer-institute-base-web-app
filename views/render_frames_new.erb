@@ -1,1 +1,19 @@
-This is a new page that we just added.
+<h1>Submit a New Blender Job</h1>
+
+<script src=<%= url("/render_new_frame.js") %> type="application/javascript" ></script>
+
+<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+  <div class="form-group">
+    <label for="blend_file">Upload Blend File</label>
+    <div class="input-group">
+      <div class="custom-file">
+          <input type="file" class="custom-file-input" name="blend_file" id="blend_file" accept=".blend" required>
+          <label class="custom-file-label" for="blend_file" id="blend_file_name">Choose file</label>
+      </div>
+    </div>
+  </div>
+
+
+  <button type="submit" class="btn btn-primary">Submit</button>
+</form>

@@ -16,7 +16,7 @@ class App < Sinatra::Base
   end
 
   def title
-    'Summer Instititue Starter App'
+    'Summer Institute - Blender'
   end
 
   get '/' do
@@ -26,6 +26,12 @@ class App < Sinatra::Base
   end
 
   get '/render/frames/new' do
+    erb :render_frames_new
+  end
+
+  post '/render/frames' do
+    logger.info("Trying to render frames with: #{params.inspect}")
+
     erb :render_frames_new
   end
 end
