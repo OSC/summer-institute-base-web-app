@@ -24,4 +24,8 @@ class App < Sinatra::Base
     @flash = { info: 'Welcome to Summer Institute!' }
     erb :index
   end
+
+  get '/render/frames/new' do
+    erb :render_frames_new
+  end
 end
