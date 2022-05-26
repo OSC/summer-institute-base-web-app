@@ -1,7 +1,9 @@
-source "https://rubygems.org"
+# frozen_string_literal: true
 
-gem "sinatra", "~> 2.2"
-gem "erubi", "~> 1.7"
-gem "auto_reloader", "~> 0.4"
+source 'https://rubygems.org'
 
-gem "pry", :group => :development
+gem 'auto_reloader', '~> 0.4'
+gem 'erubi', '~> 1.7'
+gem 'sinatra', '~> 2.2'
+
+gem 'pry', group: :development
