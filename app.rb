@@ -7,7 +7,12 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
 
-  logger = Logger.new('log/app.log')
+  attr_reader :logger
+
+  def initialize
+    super
+    @logger = Logger.new('log/app.log')
+  end
 
   def title
     'Summer Instititue Starter App'
