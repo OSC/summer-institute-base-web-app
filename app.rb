@@ -70,7 +70,18 @@ class App < Sinatra::Base
   end
 
   get '/jobs/:dir' do
-    erb :job
+    @dir = Pathname.new("#{project_root}/jobs/#{params[:dir]}")
+    unless @dir.directory? && @dir.executable?
+      @flash = { danger: "#{@dir} is not a valid job directory." }
+      erb :index
+    else
+      @images = Dir.glob("#{@dir}/*.png")
+      @job_id = File.read("#{@dir}/job_id").chomp
+      @job_state = job_state(@job_id)
+      @badge = badge(@job_state)
+
+      erb :job
+    end
   end
 
   def job_dirs
@@ -93,5 +104,29 @@ class App < Sinatra::Base
 
   def input_files_dir
     Pathname.new("#{project_root}/jobs/input_files")
+  end
+
+  def job_state(job_id)
+    state = `/bin/squeue -j #{job_id} -h -o '%t'`.chomp
+    s = {
+      '' => 'Completed',
+      'R' => 'Running',
+      'C' => 'Completed',
+      'Q' => 'Queued',
+      'CF' => 'Queued',
+      'PD' => 'Queued',
+    }[state]
+
+    s.nil? ? 'Unknown' : s
+  end
+
+  def badge(state)
+    {
+      '' => 'warning',
+      'Unknown' => 'warning',
+      'Running' => 'success',
+      'Queued' => 'info',
+      'Completed' => 'primary',
+    }[state.to_s]
   end
 end
