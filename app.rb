@@ -47,7 +47,8 @@ class App < Sinatra::Base
       copy_upload(input: params['blend_file'][:tempfile], output: blend_file)
     end
 
-    output_dir = "#{project_root}/jobs/#{Time.now.to_i}".tap { |p| Dir.mkdir(p) unless Pathname.new(p).exist? }
+    base_dir = Time.now.to_i
+    output_dir = "#{project_root}/jobs/#{base_dir}".tap { |p| Dir.mkdir(p) unless Pathname.new(p).exist? }
     basename = File.basename(blend_file, '.*')
     walltime = format('%02d:00:00', params[:num_hours])
 
@@ -60,8 +61,20 @@ class App < Sinatra::Base
     job_id = output.strip.split(';').first
     `echo #{job_id} > #{output_dir}/job_id`
 
-    @flash = { info: "submitted job #{job_id}" }
-    erb :index
+    redirect(url("/jobs/#{base_dir}"))
+  end
+
+  get '/jobs' do
+    @job_dirs = job_dirs
+    erb :jobs
+  end
+
+  get '/jobs/:dir' do
+    erb :job
+  end
+
+  def job_dirs
+    Dir.children("#{project_root}/jobs").reject { |dir| dir == 'input_files' }.sort_by(&:to_i).reverse
   end
 
   def copy_upload(input: nil, output: nil)

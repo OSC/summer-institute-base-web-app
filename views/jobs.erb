@@ -1,0 +1,15 @@
+
+<div class='row my-5'>
+  <ol class='list-group list-group-horizontal flex-wrap col-md-12'>
+    <% @job_dirs.each do |dir| %>
+    <li class='list-group-item btn btn-outline-primary m-3'>
+      <div>
+        <a href='<%= url("/jobs/#{dir}") %>' class="text-center">
+          <i class='fas fa-fw fa-camera fa-5x '></i>
+          <p><%= Time.at(dir.to_i).strftime("%a %D %I:%M") %><p/>
+        </a>
+      </div>
+    </li>
+    <% end %>    
+  </ol>
+</div>
