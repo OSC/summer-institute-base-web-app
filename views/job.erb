@@ -1,8 +1,10 @@
+<script src=<%= url("/job.js") %> type="application/javascript" ></script>
 
+<div id="job_config" data-directory="<%= @dir %>" ></div>
 
 <h1 class='my-3'>Job <%= @job_id %> is <span class="badge badge-pill badge-<%= @badge %>"><%= @job_state %></span></h1>
 
-<p class='my-2' >There are <%= @images.length %> images for this job.<p>
+<p class='my-2' >There are <span id="list_size"><%= @images.length %></span> images for this job.<p>
 
 <div class="row pt-3">
   <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
@@ -11,9 +13,9 @@
       <li data-target="#blend_image_carousel" data-slide-to="<%= idx-1 %>" class="<%= idx == 1 ? 'active' : nil %>" ></li>
       <% end %>
     </ol>
-    <div class="carousel-inner">
+    <div id="blend_image_carousel_inner" class="carousel-inner">
       <% @images.each_with_index do |image, idx| %>
-      <div class="carousel-item  <%= idx == 0 ? 'active' : nil %>">
+      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item  <%= idx == 0 ? 'active' : nil %>">
         <img class="d-block w-100" src="/pun/sys/files/api/v1/fs<%= image %>" >
       </div>
       <% end %>
