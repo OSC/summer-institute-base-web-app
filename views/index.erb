@@ -2,4 +2,19 @@
   <%= title %>
 </h1>
 
-Hello world!
+<h2 class="my-4">Projects</h2>
+
+<div class='row my-5'>
+  <ol class='list-group list-group-horizontal flex-wrap col-md-12'>
+    <% @project_dirs.each do |dir| %>
+    <li class='list-group-item btn btn-outline-dark m-3 border'>
+      <div>
+        <a href='<%= url("/projects/#{dir}") %>' class="text-center">
+          <i class='fas fa-fw fa-camera fa-5x '></i>
+          <p><%= dir.gsub('_', ' ').capitalize %><p/>
+        </a>
+      </div>
+    </li>
+    <% end %>
+  </ol>
+</div>
