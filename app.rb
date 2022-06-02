@@ -38,6 +38,16 @@ class App < Sinatra::Base
     "#{projects_root}/input_files"
   end
 
+  def copy_upload(input: nil, output: nil)
+    input_sha = Pathname.new(input).file? ? Digest::SHA256.file(input) : nil
+    output_sha = Pathname.new(output).file? ? Digest::SHA256.file(output) : nil
+    return if input_sha.to_s == output_sha.to_s
+
+    File.open(output, 'wb') do |f|
+      f.write(input.read)
+    end
+  end
+
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
@@ -78,7 +88,29 @@ class App < Sinatra::Base
   end
 
   post '/render/frames' do
-    session[:flash] = { info: "rendering frames with '#{params}'" }
-    redirect(url("/"))
+    logger.info("Trying to render frames with: #{params.inspect}")
+
+    if params['blend_file'].nil?
+      blend_file = "#{input_files_dir}/#{params[:uploaded_blend_file]}"
+    else
+      blend_file = "#{input_files_dir}/#{params['blend_file'][:filename]}"
+      copy_upload(input: params['blend_file'][:tempfile], output: blend_file)
+    end
+
+    dir = params[:dir]
+    basename = File.basename(blend_file, '.*')
+    walltime = format('%02d:00:00', params[:num_hours])
+
+    args = ['-J', "blender-#{basename}", '--parsable', '-A', params[:project_name]]
+    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAMES_RANGE=#{params[:frames_range]}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{dir}/frame-render-%j.out"]
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
+
+    job_id = output.strip.split(';').first
+    `echo #{job_id} > #{dir}/.frame_render_job_id`
+
+    session[:flash] = { info: "submitted job #{job_id}" }
+    redirect(url("/projects/#{dir.split('/').last}"))
   end
 end
