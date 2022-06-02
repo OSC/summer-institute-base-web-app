@@ -8,11 +8,18 @@ class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
 
-  attr_reader :logger
+  attr_reader :logger, :groups
 
   def initialize
     super
     @logger = Logger.new('log/app.log')
+    @groups ||= begin
+      groups_from_id = `id`.to_s.match(/groups=(.+)/)[1].split(',').map do |g|
+        g.match(/\d+\((\w+)\)/)[1]
+      end
+
+      groups_from_id.select { |g| g.match?(/^P\w+/) }
+    end
   end
 
   def title
@@ -25,6 +32,10 @@ class App < Sinatra::Base
 
   def project_dirs
     Dir.children(projects_root).reject { |dir| dir == 'input_files' }.sort_by(&:to_s)
+  end
+
+  def input_files_dir
+    "#{projects_root}/input_files"
   end
 
   get '/' do
@@ -43,6 +54,8 @@ class App < Sinatra::Base
     else
       @dir = Pathname("#{projects_root}/#{params[:dir]}")
       @flash = session.delete(:flash)
+      @uploaded_blend_files = Dir.glob("#{input_files_dir}/*.blend").map { |f| File.basename(f) }
+      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
 
       unless @dir.directory? || @dir.readable?
         session[:flash] = { danger: "#{@dir} does not exist" }
@@ -62,5 +75,10 @@ class App < Sinatra::Base
 
     session[:flash] = { info: "made new project '#{params[:name]}'" }
     redirect(url("/projects/#{dir}"))
+  end
+
+  post '/render/frames' do
+    session[:flash] = { info: "rendering frames with '#{params}'" }
+    redirect(url("/"))
   end
 end
