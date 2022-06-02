@@ -64,6 +64,25 @@ class App < Sinatra::Base
     redirect(url("/jobs/#{base_dir}"))
   end
 
+  post '/render/video' do
+    logger.info("Trying to render video with: #{params.inspect}")
+
+    output_dir = params[:dir]
+    frames_per_second = params[:frames_per_second]
+    walltime = format('%02d:00:00', params[:num_hours])
+
+    args = ['-J', 'blender-video', '--parsable']
+    args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},FRAMES_DIR=#{output_dir}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{output_dir}/video-render-%j.out"]
+    output = `/bin/sbatch #{args.join(' ')}  #{project_root}/render_video.sh 2>&1`
+
+    job_id = output.strip.split(';').first
+    `echo #{job_id} > #{output_dir}/job_id`
+
+    redirect(url("/jobs/#{output_dir.split('/').last}"))
+  end
+
   get '/jobs' do
     @job_dirs = job_dirs
     erb :jobs
