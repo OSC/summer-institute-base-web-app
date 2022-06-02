@@ -1,8 +1,38 @@
 <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
 
-<h2>Render Frames</h2>
+<p class='my-1'> Frame Render Job <%= @frame_render_job_id %> is <span class="badge badge-pill badge-<%= @frame_render_badge %>"><%= @frame_render_job_state %></span></p>
 
 <script src=<%= url("/projects.js") %> type="application/javascript" ></script>
+
+<h2 class='my-2'>Images</h2>
+<p class='my-1'>There are <span id="list_size"><%= @images.length %></span> images for this project.<p>
+
+<div class="row pt-3">
+  <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
+    <ol id="blend_image_carousel_indicators" class="carousel-indicators">
+      <% (1..@images.length).each do |idx| %>
+      <li data-target="#blend_image_carousel" data-slide-to="<%= idx-1 %>" class="<%= idx == 1 ? 'active' : nil %>" ></li>
+      <% end %>
+    </ol>
+    <div id="blend_image_carousel_inner" class="carousel-inner">
+      <% @images.each_with_index do |image, idx| %>
+      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item  <%= idx == 0 ? 'active' : nil %>">
+        <img class="d-block w-100" src="/pun/sys/files/api/v1/fs<%= image %>" >
+      </div>
+      <% end %>
+    </div>
+    <a class="carousel-control-prev" href="#blend_image_carousel" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#blend_image_carousel" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+  </div>
+</div>
+
+<h2>Render Frames</h2>
 
 <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
 
@@ -65,3 +95,6 @@
     </div>
   </div>
 </form>
+
+<div class='my-5'>
+</div>
