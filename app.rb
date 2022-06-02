@@ -16,12 +16,23 @@ class App < Sinatra::Base
   end
 
   def title
-    'Summer Instititue Starter App'
+    'Summer Institute - Blender'
   end
 
   get '/' do
     logger.info('requsting the index')
     @flash = { info: 'Welcome to Summer Institute!' }
     erb :index
+  end
+
+  get '/projects/new' do
+    erb :new_project
+  end
+
+  post '/projects/new' do
+    logger.info("Trying to render frames with: #{params.inspect}")
+    @flash = { info: "Trying to render frames with: #{params.inspect}" }
+
+    erb :new_project
   end
 end
