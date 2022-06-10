@@ -13,6 +13,13 @@ class App < Sinatra::Base
   def initialize
     super
     @logger = Logger.new('log/app.log')
+    @groups ||= begin
+    groups_from_id = `id`.to_s.match(/groups=(.+)/)[1].split(',').map do |g|
+      g.match(/\d+\((\w+)\)/)[1]
+    end
+
+    groups_from_id.select { |g| g.match?(/^P\w+/) }
+
   end
 
   def title
@@ -33,6 +40,8 @@ class App < Sinatra::Base
     else
       @dir = Pathname("#{projects_root}/#{params[:dir]}")
       @flash = session.delete(:flash)
+      @uploaded_blend_files = Dir.glob("#{input_files_dir}/*.blend").map { |f| File.basename(f) }
+      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
 
       unless @dir.directory? || @dir.readable?
         session[:flash] = { danger: "#{@dir} does not exist" }
