@@ -19,6 +19,7 @@ class App < Sinatra::Base
     end
 
     groups_from_id.select { |g| g.match?(/^P\w+/) }
+  end
 
   end
 
@@ -61,7 +62,7 @@ class App < Sinatra::Base
     redirect(url("/projects/#{dir}"))
   end
 
-  post 'render/frames' do
+  post '/render/frames' do
     session[:flash] = { info: "rendering frames with '#{params}'" }
     redirect(url('/'))
   end
