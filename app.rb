@@ -62,6 +62,18 @@ class App < Sinatra::Base
     }[state.to_s]
   end
 
+  def copy_upload(input: nil, output: nil)
+    input_sha = Pathname.new(input).file? ? Digest::SHA256.file(input) : nil
+    output_sha = Pathname.new(output).file? ? Digest::SHA256.file(output) : nil
+
+    return if input_sha.to_s == output_sha.to_s
+
+    File.open(output, 'wb') do |f|
+      f.write(input.read)
+    end
+
+  end
+
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
@@ -113,7 +125,7 @@ class App < Sinatra::Base
       blend_file = "#{input_files_dir}/#{params[:uploaded_blend_file]}"
     else
       blend_file = "#{input_files_dir}/#{params['blend_file'][:filename]}"
-      # copy_upload(input: params['blend_file'][:tempfile], output: blend_file)
+      copy_upload(input: params['blend_file'][:tempfile], output: blend_file)
     end
 
     dir = params[:dir]
