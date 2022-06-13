@@ -137,7 +137,7 @@ class App < Sinatra::Base
     basename = File.basename(blend_file, '.*')
     walltime = format('%02d:00:00', params[:num_hours])
 
-    args = ['-J', "blender-#{basename}", '--parsable']
+    args = ['-J', "blender-#{basename}", '--parsable', '-A', params[:project_name]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAMES_RANGE=#{params[:frames_range]}"]
     args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/frame-render-%j.out"]
