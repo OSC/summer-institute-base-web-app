@@ -68,7 +68,6 @@ class App < Sinatra::Base
 
     @project_dirs = project_dirs
 
-
     erb :index
   end
 
@@ -101,6 +100,7 @@ class App < Sinatra::Base
 
     dir = params[:name].downcase.gsub(' ', '_')
     "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
+    File.open("/#{projects_root}/#{dir}/.frame_render_job_id", "w+")
 
     session[:flash] = { info: "made new project '#{params[:name]}'" }
     redirect(url("/projects/#{dir}"))
