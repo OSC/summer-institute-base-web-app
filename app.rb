@@ -35,6 +35,30 @@ class App < Sinatra::Base
     "#{__dir__}/projects"
   end
 
+  def job_state(job_id)
+    state = `bin/squeue - j #{job_id} -h -o  '%t'`.chomp
+    s = {
+      '' => 'Completed',
+      'R' => 'Running',
+      'C' => 'Completed',
+      'Q' => 'Queued',
+      'CF' => 'Queued',
+      'PD' => 'Queued',
+    }[state]
+
+    s.nil? ? 'Unknown' : s
+  end
+
+  def badge(state)
+    {
+      '' => 'warning',
+      'Unknown' => 'warning',
+      'Running' => 'success',
+      'Queued' => 'info',
+      'Completed' => 'primary'
+    }[state.to_s]
+  end
+
   get '/projects/:dir' do
     if params[:dir] == 'new' || params[:dir] == 'input_files'
       erb :new_project
@@ -48,7 +72,12 @@ class App < Sinatra::Base
         session[:flash] = { danger: "#{@dir} does not exist" }
         redirect(url('/'))
       end
-    erb :show_project
+      @images = Dir.glob("#{@dir}/*.png")
+      @frame_render_job_id = File.read("#{@dir}/.frame_render_job_id").chomp
+      @frame_render_job_state = job_state(@frame_render_job_id)
+      @frame_render_badge = badge(@frame_render_job_state)
+
+      erb :show_project
     end
   end
 
