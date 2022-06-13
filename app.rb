@@ -14,29 +14,32 @@ class App < Sinatra::Base
     super
     @logger = Logger.new('log/app.log')
     @groups ||= begin
-    groups_from_id = `id`.to_s.match(/groups=(.+)/)[1].split(',').map do |g|
-      g.match(/\d+\((\w+)\)/)[1]
+      groups_from_id = `id`.to_s.match(/groups=(.+)/)[1].split(',').map do |g|
+        g.match(/\d+\((\w+)\)/)[1]
+      end
+
+      groups_from_id.select { |g| g.match?(/^P\w+/) }
     end
-
-    groups_from_id.select { |g| g.match?(/^P\w+/) }
-  end
-
   end
 
   def title
     'Summer Institute - Blender'
   end
 
-  def input_files_dir
-    "#{project_dirs}/input_files"
-  end
-
   def projects_root
     "#{__dir__}/projects"
   end
 
+  def project_dirs
+    Dir.children(projects_root).reject { |dir| dir == 'input_files' }.sort_by(&:to_s)
+  end
+
+  def input_files_dir
+    "#{projects_root}/input_files"
+  end
+
   def job_state(job_id)
-    state = `bin/squeue - j #{job_id} -h -o  '%t'`.chomp
+    state = `/bin/squeue -j #{job_id} -h -o '%t'`.chomp
     s = {
       '' => 'Completed',
       'R' => 'Running',
@@ -55,8 +58,18 @@ class App < Sinatra::Base
       'Unknown' => 'warning',
       'Running' => 'success',
       'Queued' => 'info',
-      'Completed' => 'primary'
+      'Completed' => 'primary',
     }[state.to_s]
+  end
+
+  get '/' do
+    logger.info('requsting the index')
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
+
+    @project_dirs = project_dirs
+
+
+    erb :index
   end
 
   get '/projects/:dir' do
@@ -72,10 +85,12 @@ class App < Sinatra::Base
         session[:flash] = { danger: "#{@dir} does not exist" }
         redirect(url('/'))
       end
+
       @images = Dir.glob("#{@dir}/*.png")
       @frame_render_job_id = File.read("#{@dir}/.frame_render_job_id").chomp
       @frame_render_job_state = job_state(@frame_render_job_id)
       @frame_render_badge = badge(@frame_render_job_state)
+
 
       erb :show_project
     end
@@ -85,7 +100,7 @@ class App < Sinatra::Base
     logger.info("Trying to render frames with: #{params.inspect}")
 
     dir = params[:name].downcase.gsub(' ', '_')
-    "#{projects_root}/#{dir}".tap{ |d| FileUtils.mkdir_p(d) }
+    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
 
     session[:flash] = { info: "made new project '#{params[:name]}'" }
     redirect(url("/projects/#{dir}"))
@@ -98,7 +113,7 @@ class App < Sinatra::Base
       blend_file = "#{input_files_dir}/#{params[:uploaded_blend_file]}"
     else
       blend_file = "#{input_files_dir}/#{params['blend_file'][:filename]}"
-      copy_upload(input: params['blend_file'][:tempfile], output: blend_file)
+      # copy_upload(input: params['blend_file'][:tempfile], output: blend_file)
     end
 
     dir = params[:dir]
@@ -116,18 +131,5 @@ class App < Sinatra::Base
 
     session[:flash] = { info: "submitted job #{job_id}" }
     redirect(url("/projects/#{dir.split('/').last}"))
-  end
-
-  def project_dirs
-    Dir.children(projects_root).reject{ |dir| dir == 'input_files' }.sort_by(&:to_s)
-  end
-
-  get '/' do
-    logger.info('requsting the index')
-    @flash = session.delete(:flash) || {info: 'Welcome to Summer Institute!'}
-
-    @project_dirs = project_dirs
-
-    erb :index
   end
 end
