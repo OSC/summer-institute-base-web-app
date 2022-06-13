@@ -90,7 +90,7 @@ class App < Sinatra::Base
       @dir = Pathname("#{projects_root}/#{params[:dir]}")
       @flash = session.delete(:flash)
       @uploaded_blend_files = Dir.glob("#{input_files_dir}/*.blend").map { |f| File.basename(f) }
-      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+      @project_name = @dir.basename.to_s.gsub('_', ' ')
 
       unless @dir.directory? || @dir.readable?
         session[:flash] = { danger: "#{@dir} does not exist" }
@@ -102,7 +102,6 @@ class App < Sinatra::Base
       @frame_render_job_state = job_state(@frame_render_job_id)
       @frame_render_badge = badge(@frame_render_job_state)
 
-
       erb :show_project
     end
   end
@@ -110,9 +109,11 @@ class App < Sinatra::Base
   post '/projects/new' do
     logger.info("Trying to render frames with: #{params.inspect}")
 
-    dir = params[:name].downcase.gsub(' ', '_')
-    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
-    File.open("/#{projects_root}/#{dir}/.frame_render_job_id", "w+")
+    dir = params[:name].gsub(' ', '_')
+    current_project = "/#{projects_root}/#{dir}"
+
+    current_project.tap { |d| FileUtils.mkdir_p(d) }
+    File.open("#{current_project}/.frame_render_job_id", "w+")
 
     session[:flash] = { info: "made new project '#{params[:name]}'" }
     redirect(url("/projects/#{dir}"))
