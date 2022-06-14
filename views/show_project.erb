@@ -149,6 +149,16 @@
   </div>
 </form>
 
+<form action="<%=url("projects/rename") %>" method="post">
+  <div class="d-none">
+    <input type="text" name="dir" id="dir" value="<%= @dir %>" required> 
+  </div>
+  <div class="row justify-content-md-start my-1">
+  <input type="text" name="rename">
+    <button type="submit" class="btn btn-secondary float-left">Rename</button>
+  </div>
+</form>
+
 <div class='my-5' id='job_config' data-directory="<%=@dir%>">
 </div>
  

@@ -134,6 +134,17 @@ class App < Sinatra::Base
     redirect(url("/"))
   end
 
+  post '/projects/rename' do
+    dir = params[:dir]
+    rename = params[:rename]
+    dir_new = dir[0, 54]
+    dir_new = dir_new + rename
+    FileUtils.cp_r("#{dir}", "#{dir_new}")
+
+    session[:flash] = { info: "duplicated and renamed project" }
+    redirect(url("/"))
+  end
+
   post '/render/frames' do
     logger.info("Trying to render frames with: #{params.inspect}")
 
@@ -180,5 +191,4 @@ class App < Sinatra::Base
     session[:flash] = { info: "Submitted job #{job_id}" }
     redirect(url("/projects/#{output_dir.split('/').last}"))
   end
-
 end
