@@ -84,9 +84,8 @@
         <label for="num_cpus">Walltime</label>
         <input type="number" name="num_hours" class="form-control" id="num_hours" value="1" min="0" max="120" required>
         <small class="form-text text-muted">Hours</small>
+        <button type="submit" class="btn btn-primary float-right">Render Frames</button>
       </div>
-
-      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
 
       <div class="d-none">
         <input type="text" name="dir" id="dir" value="<%= @dir %>" required>
@@ -99,11 +98,11 @@
   <div class="d-none">
     <input type="text" name="dir" id="dir" value="<%= @dir %>" required> 
   </div>
-  <div class="row justify-content-md-end my-1">
-    <button type="submit" class="btn btn-danger float-right">Delete</button>
+  <div class="row justify-content-md-start my-1">
+    <button type="submit" class="btn btn-danger float-left">Delete</button>
   </div>
 </form>
 
-<div class='my-5'>
+<div class='my-5' id='job_config' data-directory="<%=@dir%>">
 </div>
  
