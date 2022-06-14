@@ -97,10 +97,17 @@ class App < Sinatra::Base
         redirect(url('/'))
       end
 
+      `touch #{@dir}/.video_render_job_id`
+      `touch #{@dir}/.frame_render_job_id`
+
       @images = Dir.glob("#{@dir}/*.png")
       @frame_render_job_id = File.read("#{@dir}/.frame_render_job_id").chomp
       @frame_render_job_state = job_state(@frame_render_job_id)
       @frame_render_badge = badge(@frame_render_job_state)
+
+      @video_render_job_id = File.read("#{@dir}/.video_render_job_id").chomp
+      @video_render_job_state = job_state(@video_render_job_id)
+      @video_render_badge = badge(@video_render_job_state)
 
       erb :show_project
     end
@@ -121,7 +128,7 @@ class App < Sinatra::Base
 
   post '/projects/delete' do
     dir = params[:dir]
-    FileUtils.rm_rf("#{dir}")
+    FileUtils.rm_r("#{dir}")
     
     session[:flash] = { info: "deleted a project" }
     redirect(url("/"))
@@ -153,4 +160,25 @@ class App < Sinatra::Base
     session[:flash] = { info: "submitted job #{job_id}" }
     redirect(url("/projects/#{dir.split('/').last}"))
   end
+
+  post '/render/video' do
+    logger.info "Trying to render video with #{params.inspect}"
+
+    output_dir = params[:dir]
+    frames_per_second = params[:frames_per_second]
+    walltime = format('%02d:00:00', params[:num_hours])
+
+    args = ['-J', 'blender-video', '--parsable']
+    args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},FRAMES_DIR=#{output_dir}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{output_dir}/video-render-%j.out"]
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_video.sh 2>&1`
+
+    job_id = output.strip.split(';').first
+    `echo #{job_id} > #{output_dir}/.video_render_job_id`
+
+    session[:flash] = { info: "Submitted job #{job_id}" }
+    redirect(url("/projects/#{output_dir.split('/').last}"))
+  end
+
 end

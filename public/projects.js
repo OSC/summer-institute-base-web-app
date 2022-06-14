@@ -15,18 +15,18 @@ window.onload = () => {
       info_area.textContent = 'File chosen: ' + file_name;
     }
 
-    function updateCarousel(){
-      const ops = {
-        follow: true,
-        headers: {
-          'Accept' : 'application/json'
-        }
-      };
+    function updateCarousel() {
+    const opts = {
+      follow: true,
+      headers: {
+        'Accept': 'application/json'
+      }
+    };
 
-      const configEle = document.getElementById('job_config');
-      const directory = configEle.getAttribute('data-directory');
+    const configEle = document.getElementById('job_config');
+    const directory = configEle.getAttribute('data-directory');
 
-      fetch(`/pun/sys/files/api/v1/fs/${directory}`, opts)
+    fetch(`/pun/sys/files/api/v1/fs/${directory}`, opts)
       .then(response => response.json())
       .then(data => data['files'])
       .then(files => files.map(file => file['name']))
