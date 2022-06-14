@@ -1,6 +1,7 @@
 #!/bin/bash
 #PBS -e /dev/null
 #PBS -o /dev/null
+#SBATCH --nodes=1 --exclusive
 #SBATCH --account=PZS1127
 set -euo pipefail
 IFS=$'\n\t'
@@ -11,6 +12,13 @@ function frames_range() {
     echo "$FRAMES_RANGE" | perl -pe 's[.+/][]'
   )
 }
+
+# i=0
+# SLURM_ARRAY_TASK_ID=1
+# for [frames_range % 10 -eq 0] do
+#   [ -n "$SLURM_ARRAY_TASK_ID" ] || SLURM_ARRAY_TASK_ID=i
+#   ((i+=1))
+# done
 
 # Use LMod to load Blender into our PATH
 module load blender
@@ -36,3 +44,5 @@ module load blender
     -E CYCLES \
     -f "$(frames_range)" # renders frames 1-10, -f 1,3,5 renders frames 1, 3 and 5...
 )
+
+echo $frames_range()

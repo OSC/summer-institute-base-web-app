@@ -86,16 +86,22 @@
         <small class="form-text text-muted">Hours</small>
       </div>
 
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+
       <div class="d-none">
         <input type="text" name="dir" id="dir" value="<%= @dir %>" required>
       </div>
     </div>
-    
-    <div class="row justify-content-md-end my-1">
-      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
-    </div>
   </div>
 </form> 
+
+<form action="<%=url("projects/delete") %>" method="post">
+  <div class="d-none">
+    <input type="text" name="dir" id="dir" value="<%= @dir %>" required> 
+  </div>
+  <div class="row justify-content-md-end my-1">
+    <button type="submit" class="btn btn-danger float-right">Delete</button>
+  </div>
 </form>
 
 <div class='my-5'>

@@ -119,6 +119,14 @@ class App < Sinatra::Base
     redirect(url("/projects/#{dir}"))
   end
 
+  post '/projects/delete' do
+    dir = params[:dir]
+    FileUtils.rm_rf("#{dir}")
+    
+    session[:flash] = { info: "deleted a project" }
+    redirect(url("/"))
+  end
+
   post '/render/frames' do
     logger.info("Trying to render frames with: #{params.inspect}")
 
