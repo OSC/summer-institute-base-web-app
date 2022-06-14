@@ -2,6 +2,8 @@
 
 require 'sinatra/base'
 require 'logger'
+require 'open3'
+require_relative 'node_helper'
 
 # App is the main application where all your logic & routing will go
 class App < Sinatra::Base
@@ -136,15 +138,20 @@ class App < Sinatra::Base
     dir = params[:dir]
     basename = File.basename(blend_file, '.*')
     walltime = format('%02d:00:00', params[:num_hours])
+    helper = NodeHelper.new(frames: params[:frames_range], nodes: params[:num_nodes])
+    @start_frames, @end_frames = helper.task_frames
 
+    template = ERB.new(File.read("#{__dir__}/render_frames.sh.erb"))
+    script_content = template.result(binding)
     args = ['-J', "blender-#{basename}", '--parsable', '-A', params[:project_name]]
-    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAMES_RANGE=#{params[:frames_range]}"]
-    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir}"]
+    args.concat ['-N', params[:num_nodes], '--exclusive', '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/frame-render-%j.out"]
-    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
+    output, status = Open3.capture2({}, '/bin/sbatch', *args, stdin_data: script_content)
 
     job_id = output.strip.split(';').first
     `echo #{job_id} > #{dir}/.frame_render_job_id`
+    File.open("#{dir}/#{job_id}.sh", "w+") { |f| f.write(script_content) }
 
     session[:flash] = { info: "submitted job #{job_id}" }
     redirect(url("/projects/#{dir.split('/').last}"))

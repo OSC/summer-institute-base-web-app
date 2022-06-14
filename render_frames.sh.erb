@@ -1,15 +1,19 @@
 #!/bin/bash
-#PBS -e /dev/null
-#PBS -o /dev/null
-set -euo pipefail
+
+set -x
 IFS=$'\n\t'
 
-function frames_range() {
-  (
-    set +u  # allow using environment variables
-    echo "$FRAMES_RANGE" | perl -pe 's[.+/][]'
-  )
-}
+
+# added 'shift' to this array as the 0th index because SLURM_ARRAY_TASK_ID is always
+# greater than or equal to 1.
+START_FRAMES=(shift <%= @start_frames.join(' ')%>)
+END_FRAMES=(shift <%= @end_frames.join(' ')%>)
+
+# if it's a single node, SLURM_ARRAY_TASK_ID isn't set so set it to 1
+[ -n "$SLURM_ARRAY_TASK_ID" ] || SLURM_ARRAY_TASK_ID=1
+
+export TASK_START_FRAME=${START_FRAMES[$SLURM_ARRAY_TASK_ID]}
+export TASK_END_FRAME=${END_FRAMES[$SLURM_ARRAY_TASK_ID]}
 
 # Use LMod to load Blender into our PATH
 module load blender
@@ -33,6 +37,6 @@ module load blender
     -x 1 \
     -t 0 \
     -E CYCLES \
-    -f "$(frames_range)" # renders frames 1-10, -f 1,3,5 renders frames 1, 3 and 5...
+    -f "$TASK_START_FRAME..$TASK_END_FRAME" # renders frames 1-10, -f 1,3,5 renders frames 1, 3 and 5...
 )
 
