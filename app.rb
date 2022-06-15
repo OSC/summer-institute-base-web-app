@@ -145,7 +145,7 @@ class App < Sinatra::Base
     script_content = template.result(binding)
     args = ['-J', "blender-#{basename}", '--parsable', '-A', params[:project_name]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir}"]
-    args.concat ['-N', params[:num_nodes], '--exclusive', '-t', walltime, '-M', 'pitzer']
+    args.concat ['-a', "1-#{params[:num_nodes]}", '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/frame-render-%j.out"]
     output, status = Open3.capture2({}, '/bin/sbatch', *args, stdin_data: script_content)
 
@@ -164,7 +164,7 @@ class App < Sinatra::Base
     frames_per_second = params[:frames_per_second]
     walltime = format('%02d:00:00', params[:num_hours])
 
-    args = ['-J', 'blender-video', '--parsable']
+    args = ['-J', 'blender-video', '--parsable', '-A',  params[:project_name]]
     args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},FRAMES_DIR=#{output_dir}"]
     args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{output_dir}/video-render-%j.out"]
