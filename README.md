@@ -48,6 +48,12 @@ $ module load ruby/3.0.2
    Note: You may need to replace the domain above with your center's OnDemand
    portal location if not using OSC.
 
+## Develop
+
+Development instructions are in the `docs/` folder.
+
+* Here's the link to [develop a Blender app](/docs/BLENDER.md)
+
 [OnDemand]: http://openondemand.org/
 [Sinatra]: http://sinatrarb.com/
 [Summer Institute]: https://www.osc.edu/education/si
