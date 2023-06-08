@@ -145,7 +145,7 @@ class App < Sinatra::Base
     script_content = template.result(binding)
     args = ['-J', "blender-#{basename}", '--parsable', '-A', params[:project_name]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir}"]
-    args.concat ['-a', "1-#{params[:num_nodes]}", '-t', walltime, '-M', 'pitzer']
+    args.concat ['-a', "1-#{params[:num_nodes]}", '--exclusive', '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/frame-render-%j.out"]
     output, status = Open3.capture2({}, '/bin/sbatch', *args, stdin_data: script_content)
 
