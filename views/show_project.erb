@@ -142,5 +142,11 @@
   </div>
 </form>
 
+<%- video_file = "#{@dir}/video.gif" %>
+
+<%- if File.file?(video_file) -%>
+  <img class="d-block w-100" src="/pun/sys/files/api/v1/fs<%= image %>" >
+<%- end -%>
+
 <div class='my-5' id="job_config" data-directory="<%= @dir %>">
 </div>
