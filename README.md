@@ -15,7 +15,7 @@ the command line. If using a machine that has [Software Collections] you may
 want to run the following command beforehand:
 
 ```console
-$ module load ruby/2.7.3
+$ module load ruby/3.0.2
 ```
 
 1. To deploy and run this app you will need to first go to your OnDemand
@@ -29,8 +29,8 @@ $ module load ruby/2.7.3
 2. Then clone down this app and `cd` into it:
 
    ```console
-   $ git clone git@github.com:OSC/si-19-sinatra-base.git my_app
-   Cloning into 'my_app'...
+   $ git clone https://github.com/OSC/summer-institute-base-web-app.git blender
+   Cloning into 'blender'...
    $ cd my_app
    ```
 
@@ -43,7 +43,7 @@ $ module load ruby/2.7.3
    ```
 
 4. Now you should be able to access this app from OSC OnDemand at
-   https://ondemand.osc.edu/pun/dev/my_app/
+   https://ondemand.osc.edu/pun/dev/blender/
 
    Note: You may need to replace the domain above with your center's OnDemand
    portal location if not using OSC.
