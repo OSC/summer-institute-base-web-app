@@ -12,15 +12,36 @@ message.
 
 ## 1. Start the new projects page.
 
-The first step is to create a `projects#new` page for creating
-new projects.
+This will add the ability to create new projects. 
 
-The action to create a project doesn't do anything yet, this simply
-lays the groundwork for that action.
+First you need to create a new file called `new_project.erb` in the `views` directory.
+This is the webpage where users will be able to create a new project.
 
-`add a simple page for new projects`
+In this webpage we need to supply an [HTML form] for users to fill out.
+They will be able to specify one input which is the name of the project.
 
-https://github.com/OSC/summer-institute-base-web-app/commit/4e9844272f9938b66fbaf2fcfa3c2100aed74693
+
+```diff
+diff --git a/views/new_project.erb b/views/new_project.erb
+new file mode 100644
+index 0000000..a882782
+--- /dev/null
++++ b/views/new_project.erb
+@@ -0,0 +1,12 @@
++<h1 class="my-3">Create a new Rendering Project</h1>
++
++<form action="<%= url("/projects/new") %>" method="post">
++
++  <div class="form-group">
++    <label for="name">Project Name</label>
++    <input type="text" name="name" class="form-control" id="name" required>
++  </div>
++
++
++  <button type="submit" class="btn btn-primary">Submit</button>
++</form>
+```
+
 
 ## 2. Actually create the project directory.
 
@@ -131,3 +152,6 @@ more to do. Here are a couple examples of things you can add to this application
   is a camera (it's an icon - `i` - tag with `fas fa-fw fa-camera fa-5x` CSS classes).
   Make this configurable so that when you create a new project, you get to choose the icon.
     * Hint: google fontawesome for the entire list of icons you can use.
+
+
+[HTML Form]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form
