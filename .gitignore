@@ -38,4 +38,7 @@ tags
 /tmp/*
 !/tmp/.keep
 /projects/*
-!/projects/input_files/.keep
+!/projects/.keep
+
+/blend_files/*
+!/blend_files/.keep
