@@ -1,3 +1,9 @@
 #!/bin/bash
 
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+$SCRIPT_DIR/setup
+
+cd $SCRIPT_DIR/..
+
 bundle exec rackup -p9001
