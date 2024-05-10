@@ -34,7 +34,7 @@ camera icon.
 
 <details>
 <summary>full views/layout.erb file</summary>
-  
+
   ```erb
   <!doctype html>
 
@@ -45,7 +45,7 @@ camera icon.
     <title><%= title %></title>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
-    
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.13/css/all.css" integrity="sha384-DNOHZ68U8hZfKXOrtjWvjxusGo9WQnrNx2sqG0tfsghAvtVlRW3tvkXWZh58N9jp" crossorigin="anonymous">
@@ -233,7 +233,8 @@ actually create the project in the `post '/projects/new'` method
 [form] through a [POST] request).
 
 Once users create a project, we then need a route to show the project.
-This will be `projects#show` that we'll also 
+This will be `projects#show` route that we'll also use to create new
+projects.
 
 **Note that `/projects/new` changes to `/projects/:dir` with `:dir` being a variable.**
 **There's also a special case when `:dir` is `new`**.
@@ -254,7 +255,7 @@ Here you'll see we create a helper method called `projects_root`.
 ```diff
      erb(:new_project)
    end
- 
+
 +  # helper function for the parent directory of all projects.
 +  def projects_root
 +    "#{__dir__}/projects"
@@ -266,7 +267,7 @@ Here you'll see we create a helper method called `projects_root`.
 +    dir = params[:name].downcase.gsub(' ', '_')
 +
 +    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
- 
+
 -    erb :new_project
 +    session[:flash] = { info: "made new project '#{params[:name]}'" }
 +    redirect(url("/projects/#{dir}"))
@@ -400,7 +401,7 @@ actual directory (through the `directory?` API) and if it's readable
 So instead of just blindly rendering the show project page, we can
 check through an `if` block if the path is both a directory and
 it's readable. If it is, it's a valid path and we'll render the
-show_project page. 
+show_project page.
 
 If it isn't, we'll alert the user and redirect to the root [URL].
 Additionally, we need to reset the `@flash` [instance variable]
@@ -512,7 +513,7 @@ list alphabetically is just a nice thing to do.
 ```diff
      'Summer Instititue Starter App'
    end
- 
+
 +  def project_dirs
 +    Dir.children(projects_root).sort_by(&:to_s)
 +  end
@@ -532,7 +533,7 @@ for each project.
 ```diff
    <%= title %>
  </h1>
- 
+
 -Hello world!
 +<h2 class="my-4">Projects</h2>
 +
@@ -769,7 +770,7 @@ available Unix groups. Let's add this helper for `accounts` that:
 ```diff
      Dir.children(projects_root).sort_by(&:to_s)
    end
- 
+
 +  def accounts
 +    Process.groups.map do |group_id|
 +      Etc.getgrgid(group_id).name
@@ -826,7 +827,7 @@ with the `.blend` extension.
 ```diff
      end
    end
- 
+
 +  def blend_files
 +    Dir.glob("#{__dir__}/blend_files/*.blend").map do |f|
 +      File.basename(f)
@@ -854,24 +855,692 @@ the collection and generate a [select] option for each blend file.
        </div>
 ```
 
-## 5. Run the job to render frames.
+### 4d. Fixup the show_project page.
 
-With step 4 complete, step 5 is to actually submit a job that will
-render frames.
+First, let's touch up the `views/show_project.erb` file for no
+other reason than to make it look just a little nicer.
 
-`submit the job to render frames`
+Let's add two [heading elements] to add some headers to the page.
+Note that the [instance variable] `@project_name` isn't defined yet,
+so refreshing the page at this point will throw an error!
 
-https://github.com/OSC/summer-institute-base-web-app/commit/02419155944ef8479872aaadfddade841c667ada
+`views/show_project.erb`
+
+```diff
++<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
++
++<h2>Render Frames</h2>
++
+ <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+   <div class="col-md-12">
+```
+
+To get the page to render correctly, we need to define the [instance variable]
+`@project_name`. Let's do that in the `projects#show` route (` get '/projects/:dir' do` method).
+Here, just before we render the page (through `erb(:show_project)` method call)
+we can define the [instance variable] `@project_name`. This takes the name of
+the directory, changes the underscores to spaces and capitalizes it for
+human readability.
+
+`app.rb`
+
+```diff
+       erb(:new_project)
+     else
+       @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
++      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+
+       if(@dir.directory? && @dir.readable?)
+         erb(:show_project)
+```
+
+<details>
+  <summary>full app.rb file</summary>
+
+```ruby
+# frozen_string_literal: true
+
+require 'sinatra/base'
+require 'logger'
+
+# App is the main application where all your logic & routing will go
+class App < Sinatra::Base
+  set :erb, escape_html: true
+  enable :sessions
+
+  attr_reader :logger
+
+  def initialize
+    super
+    @logger = Logger.new('log/app.log')
+  end
+
+  def title
+    'Summer Instititue Starter App'
+  end
+
+  def project_dirs
+    Dir.children(projects_root).sort_by(&:to_s)
+  end
+
+  def accounts
+    Process.groups.map do |group_id|
+      Etc.getgrgid(group_id).name
+    end.select do |group|
+      group.start_with?('P')
+    end
+  end
+
+  def blend_files
+    Dir.glob("#{__dir__}/blend_files/*.blend").map do |f|
+      File.basename(f)
+    end
+  end
+
+  get '/' do
+    logger.info('requsting the index')
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
+    erb :index
+  end
+
+  get '/projects/:dir' do
+    if params[:dir] == 'new'
+      erb(:new_project)
+    else
+      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+
+      if(@dir.directory? && @dir.readable?)
+        erb(:show_project)
+      else
+        session[:flash] = { danger: "#{@dir} does not exist" }
+        redirect(url('/'))
+      end
+
+    end
+  end
+
+  # helper function for the parent directory of all projects.
+  def projects_root
+    "#{__dir__}/projects"
+  end
+
+  post '/projects/new' do
+    dir = params[:name].downcase.gsub(' ', '_')
+
+    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
+
+    session[:flash] = { info: "made new project '#{params[:name]}'" }
+    redirect(url("/projects/#{dir}"))
+  end
+end
+```
+</details>
+<br>
+
+<details>
+  <summary>full views/show_project.erb file</summary>
+
+```erb
+<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
+
+<h2>Render Frames</h2>
+
+<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+  <div class="col-md-12">
+    <div class="row">
+
+      <div class="form-group col-md-6">
+        <label for="blend_file">Blend File</label>
+        <select name="blend_file" id="blend_file" class="form-control">
+          <%- blend_files.each do |file| -%>
+          <option value="<%= file %>"><%= file %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+      <div class="form-group col-md-6">
+        <label for="account">Account</label>
+        <select name="account" id="account" class="form-control">
+          <%- accounts.each do |account| -%>
+          <option value="<%= account %>"><%= account %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+
+      <div class="form-group col-md-4">
+        <label for="num_cpus">CPUs</label>
+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <small class="form-text text-muted">More CPUs means less time rendering.</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="frame_range">Frame Range (N-M)</label>
+        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="walltime">Walltime</label>
+        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
+        <small class="form-text text-muted">Hours</small>
+      </div>
+
+      <div>
+        <input type="hidden" name="dir" id="dir" value="<%= @dir %>" required>
+      </div>
+
+    </div> <!-- end class="row" -->
+
+    <div class="row justify-content-md-end my-1">
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+    </div>
+  </div>
+
+</form>
+```
+</details>
+<br>
+
+## 5. Rendering frames.
+
+Step 4 added a [form] so that users can render frames from within
+a project view. However, the route for rendering frames does not
+exist yet. In this step we'll make that route and start an [HPC]
+job that renders the frames from the chosen blend file.
+
+```diff
+     end
+   end
+ 
++  post '/render/frames' do
++    session[:flash] = { info: "rendering frames with '#{params}'" }
++    redirect(url("/"))
++  end
++
+   get '/' do
+     logger.info('requsting the index')
+     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
+```
+
+Now if you press `Render Frames` in the [form] of the `projects#show` page
+you'll get redirected to the root [URL] with a flash message.
+
+At this point, we need to buildout the [sbatch] command to run the job given
+all the input that the user entered in the [form].
+
+[sbatch] takes many command line arguments. Here's what we'll be setting
+from the `params` variable the user provides in the [form]:
+  * `account` will set the `-A` flag.
+  * `walltime` will set `-t` flag after being formatted.
+  * `num_cpus` will set `-n` flag.
+  * `blend_file` will populate the `BLEND_FILE_PATH` environment variable
+    and will be used to set the job's name in the `-J` flag.
+  * `dir` will populate the `OUTPUT_DIR` environment variable and be used to set the
+    job's output location for the `--output` flag.
+  * `frame_range` will populate the `FRAMES_RANGE` environment variable.
+
+Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
+
+```diff
+   post '/render/frames' do
+-    session[:flash] = { info: "rendering frames with '#{params}'" }
+-    redirect(url("/"))
++    logger.info("rendering frames with #{params.inspect}")
++
++    blend_file = "#{__dir__}/blend_files/#{params['blend_file']}"
++    walltime = format('%02d:00:00', params[:walltime])
++    dir = params[:dir]
++
++    args = ['-J', "blender-#{blend_file}", '--parsable', '-A', params[:account]]
++    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
++    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
++    args.concat ['--output', "#{dir}/%j.out"]
++
++    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
++    job_id = output.strip.split(';').first
++
++    session[:flash] = { info: "submitted job #{job_id}" }
++    redirect(url("/projects/#{dir.split('/').last}"))
+   end
+ 
+   get '/' do
+```
+
+<details>
+  <summary>full app.rb file</summary>
+
+```ruby
+# frozen_string_literal: true
+
+require 'sinatra/base'
+require 'logger'
+
+# App is the main application where all your logic & routing will go
+class App < Sinatra::Base
+  set :erb, escape_html: true
+  enable :sessions
+
+  attr_reader :logger
+
+  def initialize
+    super
+    @logger = Logger.new('log/app.log')
+  end
+
+  def title
+    'Summer Instititue Starter App'
+  end
+
+  def project_dirs
+    Dir.children(projects_root).select do |p|
+      Pathname.new("#{projects_root}/#{p}").directory?
+    end.sort_by(&:to_s)
+  end
+
+  def accounts
+    Process.groups.map do |group_id|
+      Etc.getgrgid(group_id).name
+    end.select do |group|
+      group.start_with?('P')
+    end
+  end
+
+  def blend_files
+    Dir.glob("#{__dir__}/blend_files/*.blend").map do |f|
+      File.basename(f)
+    end
+  end
+
+  post '/render/frames' do
+    logger.info("rendering frames with #{params.inspect}")
+
+    blend_file = "#{__dir__}/blend_files/#{params['blend_file']}"
+    walltime = format('%02d:00:00', params[:walltime])
+    dir = params[:dir]
+
+    args = ['-J', "blender-#{params['blend_file']}", '--parsable', '-A', params[:account]]
+    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{dir}/%j.out"]
+
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
+    job_id = output.strip.split(';').first
+
+    session[:flash] = { info: "submitted job #{job_id}" }
+    redirect(url("/projects/#{dir.split('/').last}"))
+  end
+
+  get '/' do
+    logger.info('requsting the index')
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
+    erb :index
+  end
+
+  get '/projects/:dir' do
+    if params[:dir] == 'new'
+      erb(:new_project)
+    else
+      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+      @flash = session.delete(:flash)
+
+      if(@dir.directory? && @dir.readable?)
+        erb(:show_project)
+      else
+        session[:flash] = { danger: "#{@dir} does not exist" }
+        redirect(url('/'))
+      end
+
+    end
+  end
+
+  # helper function for the parent directory of all projects.
+  def projects_root
+    "#{__dir__}/projects"
+  end
+
+  post '/projects/new' do
+    dir = params[:name].downcase.gsub(' ', '_')
+
+    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
+
+    session[:flash] = { info: "made new project '#{params[:name]}'" }
+    redirect(url("/projects/#{dir}"))
+  end
+end
+```
+</details>
+<br>
 
 ## 6. Add image carousel.
+
+### 6a. Start the image carousel.
 
 Now that we can submit jobs, step 6 adds an image carousel to the `projects#show`
 page so that users can see the output of the render job.
 
-`enhance project#show to have an image carousel`
+We're going to use the [Bootstrap carousel] library to show the images on the page
+in a visually pleasing way.
 
-https://github.com/OSC/summer-institute-base-web-app/commit/e0fd971505860eb1723443c2f9f7cb19203f30dc
+To complete this step we need to 
+  * Find all the images on the backend server
+  * Use the [Bootstrap carousel] library to display all the images.
 
+Finding the images is as easy as using the [Dir] module to glob (use wildcards)
+the directory where they should be. This will find all the files in the directory
+that end with `.png` extension and assign this [Array] to an [instance variable]
+we call `@images`.
+
+`app.rb`
+
+```diff
+       @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+       @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+       @flash = session.delete(:flash)
++      @images = Dir.glob("#{@dir}/*.png")
+ 
+       if(@dir.directory? && @dir.readable?)
+         erb(:show_project)
+```
+
+The HTML to show the images is far more complicated. Let's start simple
+by creating an outer [div] with the `row my-3` [CSS Class]es just to give
+us some spacing. The next [div] has the [CSS Class]es `carousel slide` 
+which is a part of the [Bootstrap carousel] library to get the carousel
+working. Lastly need a [div] with the [CSS CLass] `carousel-inner`. This
+is where all our images will go.
+
+Then, with those outer [div]s in place - we can loop through [each] of
+the images to create a [div] with the classes `carousel-item active`
+which holds an [img] that is our image.
+
+`views/show_project.erb`
+
+```diff
+ <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
+ 
++<div class="row my-3">
++
++  <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
++    <div id="blend_image_carousel_inner" class="carousel-inner">
++
++      <%- @images.each_with_index do |image, index| -%>
++      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
++        <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
++      </div>
++      <%- end -%>
++
++    </div> <!-- carousel inner -->
++
++  </div><!-- carousel -->
++</div>
++
++
+ <h2>Render Frames</h2>
+```
+
+### 6b. Add carousel indicators.
+
+With the carousel created, you should see the images in the `projects#show`
+routes. The bootstrap javascript should be iterating through these images.
+
+That's all well and good, but should still enable a way for users to navigate
+through all the images. 
+
+First, we'll add an [unordered list] with [list item]s to be our carousel
+indicators.  We'll add this [unordered list] as a child to `blend_image_carousel`
+and a sibling to `blend_image_carousel_inner`.
+
+```diff
+   <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
+ 
++    <ol id="blend_image_carousel_indicators" class="carousel-indicators">
++      <% (1..@images.length).each do |index| %>
++      <li data-target="#blend_image_carousel" data-slide-to="<%= index-1 %>" class="<%= index == 1 ? 'active' : nil %>" ></li>
++      <% end %>
++    </ol>
++
+     <div id="blend_image_carousel_inner" class="carousel-inner">
+```
+
+Now you should have indicators at the bottom of the images. There should be
+one for each image so that users can navigate directly to any given image.
+
+### 6c. Add carousel previous & next buttons. 
+
+Now that we have carousel indicators, we also want to add buttons to
+navigate to the previous and next images.
+
+We'll use [anchor]s for this. Again, they'll be a child of `blend_image_carousel`
+and a sibling to `blend_image_carousel_inner`.
+
+```diff
+     </div> <!-- carousel inner -->
+ 
++    <a class="carousel-control-prev" href="#blend_image_carousel" role="button" data-slide="prev">
++      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
++      <span class="sr-only">Previous</span>
++    </a>
++
++    <a class="carousel-control-next" href="#blend_image_carousel" role="button" data-slide="next">
++      <span class="carousel-control-next-icon" aria-hidden="true"></span>
++      <span class="sr-only">Next</span>
++    </a>
++
+   </div><!-- carousel -->
+```
+
+<details>
+  <summary>full app.rb file</summary>
+
+```ruby
+# frozen_string_literal: true
+
+require 'sinatra/base'
+require 'logger'
+
+# App is the main application where all your logic & routing will go
+class App < Sinatra::Base
+  set :erb, escape_html: true
+  enable :sessions
+
+  attr_reader :logger
+
+  def initialize
+    super
+    @logger = Logger.new('log/app.log')
+  end
+
+  def title
+    'Summer Instititue Starter App'
+  end
+
+  def project_dirs
+    Dir.children(projects_root).select do |p|
+      Pathname.new("#{projects_root}/#{p}").directory?
+    end.sort_by(&:to_s)
+  end
+
+  def accounts
+    Process.groups.map do |group_id|
+      Etc.getgrgid(group_id).name
+    end.select do |group|
+      group.start_with?('P')
+    end
+  end
+
+  def blend_files
+    Dir.glob("#{__dir__}/blend_files/*.blend").map do |f|
+      File.basename(f)
+    end
+  end
+
+  post '/render/frames' do
+    logger.info("rendering frames with #{params.inspect}")
+
+    blend_file = "#{__dir__}/blend_files/#{params['blend_file']}"
+    walltime = format('%02d:00:00', params[:walltime])
+    dir = params[:dir]
+
+    args = ['-J', "blender-#{params['blend_file']}", '--parsable', '-A', params[:account]]
+    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{dir}/%j.out"]
+
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
+    job_id = output.strip.split(';').first
+
+    session[:flash] = { info: "submitted job #{job_id}" }
+    redirect(url("/projects/#{dir.split('/').last}"))
+  end
+
+  get '/' do
+    logger.info('requsting the index')
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
+    erb :index
+  end
+
+  get '/projects/:dir' do
+    if params[:dir] == 'new'
+      erb(:new_project)
+    else
+      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+      @flash = session.delete(:flash)
+      @images = Dir.glob("#{@dir}/*.png")
+
+      if(@dir.directory? && @dir.readable?)
+        erb(:show_project)
+      else
+        session[:flash] = { danger: "#{@dir} does not exist" }
+        redirect(url('/'))
+      end
+
+    end
+  end
+
+  # helper function for the parent directory of all projects.
+  def projects_root
+    "#{__dir__}/projects"
+  end
+
+  post '/projects/new' do
+    dir = params[:name].downcase.gsub(' ', '_')
+
+    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
+
+    session[:flash] = { info: "made new project '#{params[:name]}'" }
+    redirect(url("/projects/#{dir}"))
+  end
+end
+```
+</details>
+<br>
+
+<details>
+  <summary>full views/show_project.erb file</summary>
+
+```erb
+<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
+
+<div class="row my-3">
+
+  <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
+
+    <ol id="blend_image_carousel_indicators" class="carousel-indicators">
+      <% (1..@images.length).each do |index| %>
+      <li data-target="#blend_image_carousel" data-slide-to="<%= index-1 %>" class="<%= index == 1 ? 'active' : nil %>" ></li>
+      <% end %>
+    </ol>
+
+    <div id="blend_image_carousel_inner" class="carousel-inner">
+
+      <%- @images.each_with_index do |image, index| -%>
+      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
+        <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
+      </div>
+      <%- end -%>
+
+    </div> <!-- carousel inner -->
+
+    <a class="carousel-control-prev" href="#blend_image_carousel" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+
+    <a class="carousel-control-next" href="#blend_image_carousel" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+
+  </div><!-- carousel -->
+
+</div>
+
+
+<h2>Render Frames</h2>
+
+<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+  <div class="col-md-12">
+    <div class="row">
+
+      <div class="form-group col-md-6">
+        <label for="blend_file">Blend File</label>
+        <select name="blend_file" id="blend_file" class="form-control">
+          <%- blend_files.each do |file| -%>
+          <option value="<%= file %>"><%= file %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+      <div class="form-group col-md-6">
+        <label for="account">Account</label>
+        <select name="account" id="account" class="form-control">
+          <%- accounts.each do |account| -%>
+          <option value="<%= account %>"><%= account %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+
+      <div class="form-group col-md-4">
+        <label for="num_cpus">CPUs</label>
+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <small class="form-text text-muted">More CPUs means less time rendering.</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="frame_range">Frame Range (N-M)</label>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="walltime">Walltime</label>
+        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
+        <small class="form-text text-muted">Hours</small>
+      </div>
+
+      <div>
+        <input type="hidden" name="dir" id="dir" value="<%= @dir %>" required>
+      </div>
+
+    </div> <!-- end class="row" -->
+
+    <div class="row justify-content-md-end my-1">
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+    </div>
+  </div>
+
+</form>
+```
+</details>
+<br>
 
 ## 7. Automatically update carousel.
 
@@ -942,3 +1611,13 @@ more to do. Here are a couple examples of things you can add to this application
 [Etc]: https://docs.ruby-lang.org/en/master/Etc.html
 [Process]: https://docs.ruby-lang.org/en/master/Process.html
 [blender demo files]: https://www.blender.org/download/demo-files/
+[heading elements]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
+[HPC]: https://en.wikipedia.org/wiki/High-performance_computing
+[sbatch]: https://slurm.schedmd.com/sbatch.html
+[Bootstrap carousel]: https://getbootstrap.com/docs/4.0/components/carousel/
+[Array]: https://docs.ruby-lang.org/en/master/Array.html
+[div]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div
+[each]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-each_entry
+[img]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
+[each_with_index]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-each_with_index
+[CSS Class]: https://developer.mozilla.org/en-US/docs/Web/CSS/Class_selectors
