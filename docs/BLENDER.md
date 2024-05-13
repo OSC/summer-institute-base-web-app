@@ -123,7 +123,7 @@ They will be able to specify one input which is the name of the project.
 +  </div>
 +
 +
-+  <button type="submit" class="btn btn-primary">Submit</button>
++  <button type="submit" class="btn btn-primary my-3">Submit</button>
 +</form>
 ```
 
