@@ -158,7 +158,7 @@ respond to [POST] requests as well.
 
 ```diff
      @flash = { info: 'Welcome to Summer Institute!' }
-     erb :index
+     erb(:index)
    end
 +
 +  get '/projects/new' do
@@ -202,7 +202,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/new' do
@@ -322,7 +322,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/new' do
@@ -431,7 +431,7 @@ to account for the new alert message if it exsts.
      logger.info('requsting the index')
 -    @flash = { info: 'Welcome to Summer Institute!' }
 +    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-     erb :index
+     erb(:index)
    end
 
    get '/projects/:dir' do
@@ -480,7 +480,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -604,7 +604,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -960,7 +960,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -1196,7 +1196,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -1420,7 +1420,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
