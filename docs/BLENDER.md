@@ -221,6 +221,25 @@ end
 </details>
 <br>
 
+<details>
+  <summary>full views/new_project.erb file</summary>
+
+```erb
+<h1 class="my-3">Create a new Rendering Project</h1>
+
+<form action="<%= url("/projects/new") %>" method="post">
+
+  <div>
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" class="form-control" required/>
+  </div>
+
+  <button type="submit" class="btn btn-primary my-2">Submit</button>
+</form>
+```
+</details>
+<br>
+
 Now that the server knows how to respond to the different HTTP methods on
 the `/projects/new` route - you should be able to navigate to the new project's
 page from the navigation bar, see the form, and submit the form without errors.
