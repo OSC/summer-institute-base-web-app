@@ -213,7 +213,7 @@ class App < Sinatra::Base
     logger.info("Trying to create a project with: #{params.inspect}")
     @flash = { info: "Trying to create a project with: #{params.inspect}" }
 
-    erb :new_project
+    erb(:new_project)
   end
 end
 ```
