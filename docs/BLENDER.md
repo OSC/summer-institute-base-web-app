@@ -534,7 +534,9 @@ list alphabetically is just a nice thing to do.
    end
 
 +  def project_dirs
-+    Dir.children(projects_root).sort_by(&:to_s)
++    Dir.children(projects_root).select do |path|
++      Pathname.new("#{projects_root}/#{path}").directory?
++    end.sort_by(&:to_s)
 +  end
 +
    get '/' do
@@ -598,7 +600,9 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).sort_by(&:to_s)
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
   end
 
   get '/' do
@@ -940,7 +944,9 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).sort_by(&:to_s)
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
   end
 
   def accounts
@@ -1155,8 +1161,8 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).select do |p|
-      Pathname.new("#{projects_root}/#{p}").directory?
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
     end.sort_by(&:to_s)
   end
 
@@ -1379,8 +1385,8 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).select do |p|
-      Pathname.new("#{projects_root}/#{p}").directory?
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
     end.sort_by(&:to_s)
   end
 
