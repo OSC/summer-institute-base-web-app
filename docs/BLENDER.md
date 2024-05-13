@@ -100,7 +100,7 @@ Now if you refresh the page, you should see a camera in the navigatiion bar.
 However, if you click it the webserver will return an error because we haven't
 created the server actions or pages yet.
 
-### 1a. Add the new projects webpage and server actions
+### 1b. Add the new projects webpage and server actions
 
 Now you need to create a new file called `new_project.erb` in the `views` directory.
 This is the webpage that will be served when users navigate to the link provided
