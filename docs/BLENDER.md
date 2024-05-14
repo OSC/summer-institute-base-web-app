@@ -791,7 +791,10 @@ available Unix groups. Let's add this helper for `accounts` that:
 `app.rb`
 
 ```diff
-     Dir.children(projects_root).sort_by(&:to_s)
+  def project_dirs
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
    end
 
 +  def accounts
