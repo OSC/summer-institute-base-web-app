@@ -100,7 +100,7 @@ Now if you refresh the page, you should see a camera in the navigatiion bar.
 However, if you click it the webserver will return an error because we haven't
 created the server actions or pages yet.
 
-### 1a. Add the new projects webpage and server actions
+### 1b. Add the new projects webpage and server actions
 
 Now you need to create a new file called `new_project.erb` in the `views` directory.
 This is the webpage that will be served when users navigate to the link provided
@@ -123,7 +123,7 @@ They will be able to specify one input which is the name of the project.
 +  </div>
 +
 +
-+  <button type="submit" class="btn btn-primary">Submit</button>
++  <button type="submit" class="btn btn-primary my-3">Submit</button>
 +</form>
 ```
 
@@ -158,7 +158,7 @@ respond to [POST] requests as well.
 
 ```diff
      @flash = { info: 'Welcome to Summer Institute!' }
-     erb :index
+     erb(:index)
    end
 +
 +  get '/projects/new' do
@@ -202,7 +202,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/new' do
@@ -213,11 +213,30 @@ class App < Sinatra::Base
     logger.info("Trying to create a project with: #{params.inspect}")
     @flash = { info: "Trying to create a project with: #{params.inspect}" }
 
-    erb :new_project
+    erb(:new_project)
   end
 end
 ```
 
+</details>
+<br>
+
+<details>
+  <summary>full views/new_project.erb file</summary>
+
+```erb
+<h1 class="my-3">Create a new Rendering Project</h1>
+
+<form action="<%= url("/projects/new") %>" method="post">
+
+  <div>
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" class="form-control" required/>
+  </div>
+
+  <button type="submit" class="btn btn-primary my-2">Submit</button>
+</form>
+```
 </details>
 <br>
 
@@ -303,7 +322,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/new' do
@@ -412,7 +431,7 @@ to account for the new alert message if it exsts.
      logger.info('requsting the index')
 -    @flash = { info: 'Welcome to Summer Institute!' }
 +    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-     erb :index
+     erb(:index)
    end
 
    get '/projects/:dir' do
@@ -461,7 +480,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -515,7 +534,9 @@ list alphabetically is just a nice thing to do.
    end
 
 +  def project_dirs
-+    Dir.children(projects_root).sort_by(&:to_s)
++    Dir.children(projects_root).select do |path|
++      Pathname.new("#{projects_root}/#{path}").directory?
++    end.sort_by(&:to_s)
 +  end
 +
    get '/' do
@@ -579,13 +600,15 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).sort_by(&:to_s)
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
   end
 
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -768,7 +791,10 @@ available Unix groups. Let's add this helper for `accounts` that:
 `app.rb`
 
 ```diff
-     Dir.children(projects_root).sort_by(&:to_s)
+  def project_dirs
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
    end
 
 +  def accounts
@@ -921,7 +947,9 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).sort_by(&:to_s)
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
   end
 
   def accounts
@@ -941,7 +969,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -1081,7 +1109,7 @@ from the `params` variable the user provides in the [form]:
     and will be used to set the job's name in the `-J` flag.
   * `dir` will populate the `OUTPUT_DIR` environment variable and be used to set the
     job's output location for the `--output` flag.
-  * `frame_range` will populate the `FRAMES_RANGE` environment variable.
+  * `frame_range` will populate the `FRAME_RANGE` environment variable.
 
 Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
 
@@ -1091,7 +1119,7 @@ Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
 -    redirect(url("/"))
 +    logger.info("rendering frames with #{params.inspect}")
 +
-+    blend_file = "#{__dir__}/blend_files/#{params['blend_file']}"
++    blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
 +    walltime = format('%02d:00:00', params[:walltime])
 +    dir = params[:dir]
 +
@@ -1100,7 +1128,7 @@ Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
 +    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
 +    args.concat ['--output', "#{dir}/%j.out"]
 +
-+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
++    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
 +    job_id = output.strip.split(';').first
 +
 +    session[:flash] = { info: "submitted job #{job_id}" }
@@ -1136,8 +1164,8 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).select do |p|
-      Pathname.new("#{projects_root}/#{p}").directory?
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
     end.sort_by(&:to_s)
   end
 
@@ -1158,16 +1186,16 @@ class App < Sinatra::Base
   post '/render/frames' do
     logger.info("rendering frames with #{params.inspect}")
 
-    blend_file = "#{__dir__}/blend_files/#{params['blend_file']}"
+    blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
     walltime = format('%02d:00:00', params[:walltime])
     dir = params[:dir]
 
-    args = ['-J', "blender-#{params['blend_file']}", '--parsable', '-A', params[:account]]
+    args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
     args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/%j.out"]
 
-    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
     job_id = output.strip.split(';').first
 
     session[:flash] = { info: "submitted job #{job_id}" }
@@ -1177,7 +1205,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -1247,7 +1275,7 @@ we call `@images`.
          erb(:show_project)
 ```
 
-The HTML to show the images is far more complicated. Let's start simple
+The [HTML] to show the images is far more complicated. Let's start simple
 by creating an outer [div] with the `row my-3` [CSS Class]es just to give
 us some spacing. The next [div] has the [CSS Class]es `carousel slide` 
 which is a part of the [Bootstrap carousel] library to get the carousel
@@ -1286,7 +1314,7 @@ which holds an [img] that is our image.
 ### 6b. Add carousel indicators.
 
 With the carousel created, you should see the images in the `projects#show`
-routes. The bootstrap javascript should be iterating through these images.
+routes. The bootstrap [javascript] should be iterating through these images.
 
 That's all well and good, but should still enable a way for users to navigate
 through all the images. 
@@ -1360,8 +1388,8 @@ class App < Sinatra::Base
   end
 
   def project_dirs
-    Dir.children(projects_root).select do |p|
-      Pathname.new("#{projects_root}/#{p}").directory?
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
     end.sort_by(&:to_s)
   end
 
@@ -1382,16 +1410,16 @@ class App < Sinatra::Base
   post '/render/frames' do
     logger.info("rendering frames with #{params.inspect}")
 
-    blend_file = "#{__dir__}/blend_files/#{params['blend_file']}"
+    blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
     walltime = format('%02d:00:00', params[:walltime])
     dir = params[:dir]
 
-    args = ['-J', "blender-#{params['blend_file']}", '--parsable', '-A', params[:account]]
+    args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
     args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/%j.out"]
 
-    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/render_frames.sh 2>&1`
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
     job_id = output.strip.split(';').first
 
     session[:flash] = { info: "submitted job #{job_id}" }
@@ -1401,7 +1429,7 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 
   get '/projects/:dir' do
@@ -1544,16 +1572,340 @@ end
 
 ## 7. Automatically update carousel.
 
-Having the carousel is great, but in step 6 to update it users have to
-refresh the page. This is a poor user experience, so step 7 adds some javascript
-to query the filesystem for new images. When there are new images from the rendering
-job, the javascript will fetch it and add it to the page automatically without
-having to refresh the page.
+Having the carousel is great, but as it is in step 6,
+users have to manually refresh the page to see any updates.
+This is a poor user experience, so step 7 adds some [javascript]
+to query the filesystem for new images. When there are new
+images from the rendering job, the [javascript] will fetch it
+and add it to the page automatically without users having to
+refresh the page.
 
-`add javascript to update carousel automatically`
+We're using the [jquery] [javascript] framework for convenience. 
 
-https://github.com/OSC/summer-institute-base-web-app/commit/2d1f6b9190c1abe3a433a49e5ffd03107277e5b3
+### 7a. Start editing app.js
 
+There's already a [javascript] file that's being loaded on every page.
+The file is `public/app.js`. Let's give it just a quick edit so that
+when the page loads it'll 
+
+`jQuery` is a function that will run when the [window page load event]
+is fired. I.e., when the page is loaded.
+
+`public/app.js`
+
+```diff
+ jQuery(() => {
+-  console.log('hello world');
++  updateCarousel();
+ });
++
++function updateCarousel() {
++  console.log('hello world');
++}
+```
+
+### 7b. Pass directory to javascript.
+
+Now that we have a helper function to update the carousel,
+let's get started with that work!
+
+First we need a way to pass the project's directory to
+the [javascript] running on the client's browser.  We can do this
+through [HTML data attributes].
+
+Let's add a hidden [div] (class `d-none` sets the display attribute
+to none to make it invisible) with on data attribute for the directory.
+
+`views/show_project.erb`
+
+```diff
+         </div>
+     </div>
+ </form>
++
++<div class='d-none' id="project_config" data-directory="<%= @dir %>">
++</div>
+```
+
+Now in `public/app.js` we can query for this element and extract
+the directory we need to query.
+
+First we use plain [javascript] APIs like [getElementById] to get
+the [HTML] element we're looking for.  Note that `app.js` is being
+loaded on every page. So if `configElement` is `null`, we should
+just exit because we're not on a project's page.
+
+Once we have the element we're looking for, we can directly
+get it's `directory`. We'll need this parameter because that is
+the file system location we'll be inspecting for new png images.
+
+```diff
+ function updateCarousel() {
+-  console.log('hello world');
++  const configElement = document.getElementById('project_config');
++  if(configElement == null) {
++    return;
++  }
++
++  const directory = configElement.dataset.directory;
++
++  console.log(`will be querying ${directory} for new images.`);
+ }
+```
+
+### 7c. Fetch the directory data.
+
+Now that we know what directory we want to query to
+find the new images - we can start making those queries.
+
+We'll be using the [javascript]'s [fetch] API to make
+HTTP calls to Open OnDemand's files app.
+
+Since we already know the directory we need to query,
+we can put that directly in the `url` variable.
+Next we'll need a set of options, importantly,
+the [Accept header]. This tells the server what
+we're willing to accept in the response. We specify that
+we're only willing to accept `application/json` in the
+server's response.
+
+We can then call [fetch] and simply turn the data into [json]
+format. We'll then just log it to the console in this step.
+
+
+```diff
+  console.log(`will be querying ${directory} for new images.`);
++
++  const url = `/pun/sys/dashboard/files/fs/${directory}`;
++  const options = {
++    headers: {
++      'Accept': 'application/json'
++    }
++  }
++
++  fetch(url, options)
++    .then(response => response.json())
++    .then(data => console.log(data));
+ }
+```
+
+### 7d. Mapping and filtering the json data
+
+The files response we're getting from the server isn't
+exactly what we need. So, we're going to need to do
+some translations and filtering before we can update the 
+[DOM (Document Object Model)].
+
+We need to:
+  * extract the file metadata from the response.
+  * extract the name of the file from the file metadata.
+  * filter the list of names for only names that end with png
+
+
+```diff
+
+   fetch(url, options)
+     .then(response => response.json())
+-    .then(data => console.log(data));
++    .then(data => data['files'])
++    .then(files => files.map(file => file['name']))
++    .then(files => files.filter(file => file.endsWith('png')))
++    .then(files => {
++      for(const file of files) {
++        console.log(file);
++      }
++    });
+ }
+```
+
+### 7e. Determine if image needs to be added.
+
+Now that we've extracted all the file names that currently
+exist on the filesystem, we can almost begin to modify the
+[DOM (Document Object Model)]. Let's setup the scaffoling
+to do jsut that.
+
+In our loop of all the images, we need to:
+
+* determine if the page already has that image
+* call updateCarousel again to continue searching for new files.
+
+In the loop of all files, we can generate the [HTML id] and use
+[getElementById] to query for the element.  If we find the element
+is already on the page (the query returned something that is not 
+`null`) we can just continue the loop.
+
+If we don't find the image already on the [DOM (Document Object Model)]
+we'll just log that we will be adding it.
+
+As the last step, we can use [setTimeout] to call the `updateCarousel`
+function all over again in 10,000 milliseconds (10 seconds) thereby
+continuing our search for new images.
+
+```diff
+     .then(files => files.filter(file => file.endsWith('png')))
+     .then(files => {
+       for(const file of files) {
+-        console.log(file);
++
++        const imageId = `${file.replaceAll('.', '_')}`;
++        const image = document.getElementById(imageId);
++
++        // image is already on the DOM so just return.
++        if(image != null) {
++          console.log(`skipping ${imageId} because it's already on the DOM.`);
++          continue;
++        }
++
++        console.log(`adding ${imageId} to the DOM.`);
++
+       }
++
++      setTimeout(updateCarousel, 10000);
+     });
+ }
+```
+
+
+### 7f. Create new image div.
+
+Now that we have the [javascript] built out to query
+the filesystem for new files, we need to edit the
+[DOM (Document Object Model)] to add the new file.
+
+Fist, we'll make the new [HTML] [div].  The [div]
+we're attempting to make looks like this. This should look
+familar from the `views/show_project.erb`.
+
+```html
+<div id="render_0001_png" class="carousel-item">
+  <img class="d-block w-100" src="/path/to/image/render_0001.png">
+</div>
+```
+
+To do this with [javascript] we'll use the [createElement] API.
+Let's create the outer [div] first. We'll use the [classList] API
+to add the `carousel-item` class to it.
+
+To add the [img] element as the inner child [HTML] to the parent
+[div] `newImage` we can use the [innerHTML] API and provide a string.
+
+```diff
+         console.log(`adding ${imageId} to the DOM.`);
+ 
++        newImage = document.createElement('div');
++        newImage.id = imageId;
++        newImage.classList.add('carousel-item');
++        newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${directory}/${file}" >`;
++
+       }
+ 
+       setTimeout(updateCarousel, 10000);
+```
+
+### 7g. Create new li indicator.
+
+Now we have the [javascript] creating a new [div] and [img]
+which is great.  However, the [Bootstrap carousel] has
+[li] indicators at the bottom for navigation.
+
+We can't add the image without the [li] indicator, so
+let's do that now.
+
+The [HTML] we're trying to build is similar to this (though the numbers
+in `data-slide-to` will be variable).
+
+```html
+<li data-target="#blend_image_carousel" data-slide-to="1"></li>
+```
+
+Again, we'll use the [createElement] API, but this time passing
+`li` as the argument.
+
+We can use the [setAttribute] API to add [HTML data attributes]
+to the [li].
+
+```diff
+         newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${q}/${file}" >`;
+ 
+-
++        const newIndicator = document.createElement('li');
++        newIndicator.setAttribute('data-target', '#blend_image_carousel');
+       }
+ 
+       setTimeout(updateCarousel, 10000);
+```
+
+We also need to set the `data-slide-to` [HTML data attributes] as
+well. To do this however, we need to find the current size of the
+[ol] so that we can add 1 to that value to get the correct
+`data-slide-to` value.
+
+Luckily the [ol] in question has the [id] `blend_image_carousel_indicators`.
+So we can use the handy [getElementById] to find it. When we call
+[children] on this element, it'll return an [Array] of child elements.
+We can then call `length` on that array to find the number of children
+in the [ol].
+
+```diff
+         newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${q}/${file}" >`;
+ 
++
++        const indicatorList = document.getElementById('blend_image_carousel_indicators');
++        const totalImages = indicatorList.children.length;
+         const newIndicator = document.createElement('li');
+         newIndicator.setAttribute('data-target', '#blend_image_carousel');
++        newIndicator.setAttribute('data-slide-to', totalImages);
+       }
+ 
+       setTimeout(updateCarousel, 10000);
+```
+
+
+### 7h. Attach elements to the DOM.
+
+Now that we have the elements, there's one
+edge case we need to take care of - what
+happens when there are no images on the page?
+
+Well, if there are no images on the page yet,
+we need to add the `active` [CSS Class] to the indicator
+and image.  We can check the `totalImages` to see if
+it's 0 or not. If it is, we'll apply the [CSS Class].
+
+```diff
+         newIndicator.setAttribute('data-target', '#blend_image_carousel');
+         newIndicator.setAttribute('data-slide-to', totalImages);
++
++        if(totalImages == 0) {
++          newIndicator.classList.add('active');
++          newImage.classList.add('active');
++        }
+       }
+ 
+       setTimeout(updateCarousel, 10000);
+```
+
+With that edge case out of the way - we can now
+actually add the newly created elements to the [DOM (Document Object Model)].
+
+We can do this through the [append] API on elements that
+are already a part of the [DOM (Document Object Model)].
+
+Note that we want to append the new image [div]s to the
+`blend_image_carousel_inner` element, so we have to query
+for it.
+
+```diff
+           newIndicator.classList.add('active');
+           newImage.classList.add('active');
+         }
++        const carousel = document.getElementById('blend_image_carousel_inner');
++
++        carousel.append(newImage);
++        indicatorList.append(newIndicator);
+       }
+```
 
 ## 8. Render a video.
 
@@ -1621,3 +1973,21 @@ more to do. Here are a couple examples of things you can add to this application
 [img]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
 [each_with_index]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-each_with_index
 [CSS Class]: https://developer.mozilla.org/en-US/docs/Web/CSS/Class_selectors
+[jquery]: https://api.jquery.com/
+[window page load event]: https://developer.mozilla.org/en-US/docs/Web/API/Window/load_event
+[HTML data attributes]: https://developer.mozilla.org/en-US/docs/Learn/HTML/Howto/Use_data_attributes
+[getElementById]: https://developer.mozilla.org/en-US/docs/Web/API/Document/getElementById
+[fetch]: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+[Accept header]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Accept
+[json]: https://www.json.org/json-en.html
+[DOM (Document Object Model)]: https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model
+[HTML id]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id
+[setTimeout]: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout
+[javascript]: https://developer.mozilla.org/en-US/docs/Web/JavaScript
+[HTML]: https://developer.mozilla.org/en-US/docs/Web/HTML
+[newElement]: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+[classList]: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+[innerHTML]: https://developer.mozilla.org/en-US/docs/Web/API/Element/innerHTML
+[setAttribute]: https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute
+[id]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id
+[children]: https://developer.mozilla.org/en-US/docs/Web/API/Element/children

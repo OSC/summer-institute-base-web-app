@@ -22,6 +22,6 @@ class App < Sinatra::Base
   get '/' do
     logger.info('requsting the index')
     @flash = { info: 'Welcome to Summer Institute!' }
-    erb :index
+    erb(:index)
   end
 end
