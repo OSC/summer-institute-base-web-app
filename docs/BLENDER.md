@@ -5,6 +5,54 @@ to create a web app that can render frames and movies.
 
 It attempts to break features out into stages.
 
+## Preface
+
+Let's start small and familarize ourselves with this web application.
+
+## Preface: app.rb
+
+First, let's look at the `app.rb` file in the root of this project.
+We're using the [Sinatra] framework to start this app.
+
+When you load the initial page the server (the `app.rb` file itself)
+responds through this function.
+
+First we're using the `logger` to write some information to the
+log file (located at `log/app.log`).  This can be useful in debugging.
+
+Next we set the `@flash` [instance variable] to welcome the users
+to the application.
+
+Lastly, the `erb` function renders the page. The argument we give
+to the `erb` function is `:index` the page we want to render. I.e.,
+`views/index.erb` will be the page we want to render when the
+server responds.
+
+```ruby
+  get '/' do
+    logger.info('requsting the index')
+    @flash = { info: 'Welcome to Summer Institute!' }
+    erb(:index)
+  end
+```
+
+### Preface: app.rb: change the flash message
+
+To start off, let's change the flash message from
+`Welcome to Summer Institute!` to anything else you like.
+
+Note that along with `info`, there's also `danger` to
+generate a red panel and `warning` to generate a yellow
+panel.
+
+### Preface: views/index.erb: change the page content
+
+The initial page that's rendered - `views/index.erb` -
+doesn't have a lot to it yet. It simply says `Hello world!`.
+Let's change this text now just to get a feel for
+changing the page and seeing it render.
+
+
 ## 1. Start the new projects page.
 
 First we want the ability to create new rendering projects.
