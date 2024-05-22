@@ -73,7 +73,7 @@ as follows: There is one single [unordered list (ul)] with many
 creating in later steps. Within the [anchor (a)] is an [idiomatic text (i)]
 tag for icons and the actual text we'll display for users.
 
-The [anchor (a)]'s [href] needs a URL to point to.
+The [anchor (a)]'s [href] needs a [URL] to point to.
 We can use the `url` [Sinatra] function to generate one for us.
 The [href] should point to `url('/projects/new')`.
 
@@ -175,15 +175,53 @@ created the server actions or pages yet.
 
 ### 1b. Add the new projects webpage and server actions
 
-Now you need to create a new file called `new_project.erb` in the `views` directory.
-This is the webpage that will be served when users navigate to the link provided
-in the previous step.
+Now let's make the server action and web page for this "New Projects"
+functionality.
 
-In this webpage we need to supply an [form] for users to fill out.
-They will be able to specify one input which is the name of the project.
+First, let's add the server action in `app.rb`.  The server needs
+to respond to [GET] requests to the `/projects/new` URL path. In fact,
+the error page that [Sinatra] responds with gives you a hint on how
+to do this.
 
 
-`views/new_project.erb`
+
+<details>
+  <summary>official solution - addition to app.rb</summary>
+
+```diff
+     @flash = { info: 'Welcome to Summer Institute!' }
+     erb(:index)
+   end
++
++  get '/projects/new' do
++    erb(:new_project)
++  end
+ end
+```
+</details>
+<br>
+
+If you click this link at this point, you may get an error page
+containing the error `Errno::ENOENT` because we're trying to render
+a file that does not exist yet.  Simply creating the file resolves the issue.
+
+Once you've created the `views/new_project.erb`, you can start editing
+it. This webpage needs to supply an [form] for users to fill out.
+Websites use [form]s to pass information from the user to the server.
+
+
+This [form] should have one text [input] for specifying the
+project name. This is the only piece of information required
+to create a project - the name of the project.
+
+Tips:
+* [form]s need a [button] to submit the form.
+* [form]s need an [action] attribute to know where to submit the form.
+* [label]s are not strictly required, but should always be used to label
+  [input]s.
+
+<details>
+  <summary>official solution - addition to views/new_project.erb</summary>
 
 ```diff
 +<h1 class="my-3">Create a new Rendering Project</h1>
@@ -199,23 +237,9 @@ They will be able to specify one input which is the name of the project.
 +  <button type="submit" class="btn btn-primary my-3">Submit</button>
 +</form>
 ```
+</details>
 
-Now that the form is created, add this action to the server so that the server
-will know how to respond when it gets requests to the `/projects/new` [URL] through
-HTTP [GET] requests.
-
-`app.rb`
-
-```diff
-     @flash = { info: 'Welcome to Summer Institute!' }
-     erb(:index)
-   end
-+
-+  get '/projects/new' do
-+    erb(:new_project)
-+  end
- end
-```
+<br>
 
 Now if you click on `New Project` in the navigation bar the [form] should
 be rendering because the file exists and the server knows that it needs to
@@ -225,9 +249,16 @@ Submitting this [form] however, will not work because the server does not
 know how to respond to [POST] requests at the same url.
 
 Let's add another method to the `app.rb` file so that it knows how to
-respond to [POST] requests as well.
+respond to [POST] requests to `/projects/new` as well as [GET] requests.
 
-`app.rb`
+For simplicity in this step, let's re-render the `views/new_project.erb`
+while providing a new `@flash` message containing the parameters
+that were sent. [Sinatra] provides the `params` variable to inspect
+what parameters have been sent to the web server.
+
+
+<details>
+  <summary>official solution - addition to app.rb file</summary>
 
 ```diff
      @flash = { info: 'Welcome to Summer Institute!' }
@@ -246,9 +277,12 @@ respond to [POST] requests as well.
 +  end
  end
 ```
+</details>
+
+<br>
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -295,14 +329,16 @@ end
 <br>
 
 <details>
-  <summary>full views/new_project.erb file</summary>
+  <summary>official solution - full views/new_project.erb file</summary>
 
 ```erb
-<h1 class="my-3">Create a new Rendering Project</h1>
+<div class="d-flex justify-content-center">
+  <h1 class="my-2">Create a new rendering project</h1>    
+</div>
 
 <form action="<%= url("/projects/new") %>" method="post">
 
-  <div>
+  <div class="form-control">
     <label for="name">Name</label>
     <input id="name" name="name" type="text" class="form-control" required/>
   </div>
@@ -328,21 +364,30 @@ Once users create a project, we then need a route to show the project.
 This will be `projects#show` route that we'll also use to create new
 projects.
 
-**Note that `/projects/new` changes to `/projects/:dir` with `:dir` being a variable.**
-**There's also a special case when `:dir` is `new`**.
+**Note that `/projects/new` changes to `/projects/:name` with `:name` being a variable.**
+**There's also a special case when `:name` is `new`**.
 
-### 2a. Implment projects#new route.
+### 2a. Implement projects#new route.
 
 Given users input the project `name` - we need to:
 
 * Sanitize the input by lowercasing it and changing any spaces to underscores.
 * Create the directory on the file system.
 * Redirect to the page that shows the project the user just created.
+  Though this redirection will fail until we get to step 2b.
 
-Here you'll see we create a helper method called `projects_root`.
-`__dir__` is the directory of the current file (`app.rb`).
+Tips:
+* You should create project directories under the `projects` directory
+  already a part of this application. Calling `__dir__` within `app.rb`
+  will give you the current directory of the file (app.rb).
+* You can use [FileUtils] to create directories.
+* [Sinatra] provides a `redirect` helper function to redirect
+  the client to a different page.
 
-`app.rb`
+<br>
+
+<details>
+  <summary>official solution - addition to app.rb</summary>
 
 ```diff
      erb(:new_project)
@@ -366,6 +411,9 @@ Here you'll see we create a helper method called `projects_root`.
    end
  end
 ```
+</details>
+
+<br>
 
 <details>
   <summary>full app.rb file</summary>
@@ -441,87 +489,96 @@ We'll create this functionality in the next step.
 
 ### 2b. Creating a projects#show page.
 
-Now that [POST] requests to `projects#new` modify the system
+Now that [POST] requests to `/projects/new` modify the system
 to create a project, we need the functionality to actually show that
 project.
 
 In this step you need to:
-* modify the `get '/projects/new'` method to respond to `/projects/<some variable>`
-  where `<some variable>` is the name of the project the user is trying to navigate to.
-* create the HTML to be displayed when showing a project.
+* Modify the `get '/projects/new'` method to respond to `/projects/:name`
+  where `:name` is the variable project name the user is trying to navigate to.
+* Create the HTML to be displayed when showing a project. This
+  should be `views/show_project.erb` file. It can contain anything at this point,
+  it just needs to exist.
 
-Create a new file the `views` called `show_project.erb`. For now, all we need is
-something simple. Just showing the name of the project directory is enough for now.
-Note that we're using the `@dir` in this [ERB] template which is an [instance variable].
+Tips:
+* When changing the route from `/projects/new` to `/projects/:name`
+  [Sinatra] will extract the variable `:name` from the [URL] and populate
+  the `params` [Hash] with that key that you can access through `params[:name]`.
+* See https://sinatrarb.com/intro.html for more information. You can
+  search this page for `:name` to see the examples.
+* Note that you'll have to account for the edge case when `:name` is `new`.
+  If the `:name` variable is 'new' we should render `views/new_project.erb`
+  instead of `views/show_project.erb`.
 
-`views/show_project.erb`
+<br>
 
-```diff
-+Showing project at <%= @dir %>
-```
-
-Now let's modify `get '/projects/new'` to respond to variables in the route.
-
-First we need to change the route from `/projects/new` to `/projects/:dir` where
-`:dir` is now a variable that [Sinatra] will extract from the [URL] and put in the
-`params` variable which is a [Hash]. `:dir` is the key can acess the value through
-`params[:dir]`.
+<details>
+  <summary>official solution - addition to app.rb</summary>
 
 ```diff
 -  get '/projects/new' do
 -    erb(:new_project)
-+  get '/projects/:dir' do
-+    if params[:dir] == 'new'
++  get '/projects/:name' do
++    if params[:name] == 'new'
 +      erb(:new_project)
 +    else
-+      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
 +      erb(:show_project)
 +    end
    end
 ```
+</details>
+
+<br>
+
+### 2c. Validate the directory.
 
 While this works fine, we need to account for the cases when the user
 has input a [URL] to a project that doesn't exist. So we need to ensure
 that when we render the show page (`erb(:show_project)`) we only
 render pages for valid projects.
 
-Luckily for us, `@dir` is a [Pathname] that has all sorts of helpers to
-determine if the path is valid. For us, we need to check if it is an
-actual directory (through the `directory?` API) and if it's readable
-(through the `readable` API).
+In this step you must validate that the parameter `:name` is actually
+a directory.
 
-So instead of just blindly rendering the show project page, we can
-check through an `if` block if the path is both a directory and
-it's readable. If it is, it's a valid path and we'll render the
-show_project page.
+Tips:
+* Create a [Pathname] variable that is `projects_root` (created in a previous step)
+  and the `params[:name]` variable. [Pathname] has nice helper functions
+  like `directory?` to check if the path is an actual directory.
+* Use an `if` block to check if the path is valid. If it isn't
+  you should provide a danger flash message and redirect to the root
+  [URL] ("/").
 
-If it isn't, we'll alert the user and redirect to the root [URL].
-Additionally, we need to reset the `@flash` [instance variable]
-to account for the new alert message if it exsts.
+
+<details>
+  <summary>official solution - addition to app.rb</summary>
 
 ```diff
-   get '/' do
-     logger.info('requsting the index')
--    @flash = { info: 'Welcome to Summer Institute!' }
-+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
-     erb(:index)
-   end
-
-   get '/projects/:dir' do
-     if params[:dir] == 'new'
+   get '/projects/:name' do
+     if params[:name] == 'new'
        erb(:new_project)
      else
-       @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+       @directory = Pathname.new("#{projects_root}/#{params[:name]}")
 -      erb(:show_project)
 +
-+      if(@dir.directory? && @dir.readable?)
++      if(@directory.directory? && @directory.readable?)
 +        erb(:show_project)
 +      else
-+        session[:flash] = { danger: "#{@dir} does not exist" }
++        session[:flash] = { danger: "#{@directory} does not exist" }
 +        redirect(url('/'))
 +      end
 +
 ```
+</details>
+
+<br>
+
+<details>
+  <summary>official solution - views/show_project.erb file</summary>
+
+```erb
+Showing project at <%= @directory %>
+```
+</details>
 
 The full `views/show_project.erb` is already shown above.
 
@@ -556,16 +613,16 @@ class App < Sinatra::Base
     erb(:index)
   end
 
-  get '/projects/:dir' do
-    if params[:dir] == 'new'
+  get '/projects/:name' do
+    if params[:name] == 'new'
       erb(:new_project)
     else
-      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+      @directory = Pathname.new("#{projects_root}/#{params[:name]}")
 
-      if(@dir.directory? && @dir.readable?)
+      if(@directory.directory? && @directory.readable?)
         erb(:show_project)
       else
-        session[:flash] = { danger: "#{@dir} does not exist" }
+        session[:flash] = { danger: "#{@directory} does not exist" }
         redirect(url('/'))
       end
 
@@ -684,16 +741,16 @@ class App < Sinatra::Base
     erb(:index)
   end
 
-  get '/projects/:dir' do
-    if params[:dir] == 'new'
+  get '/projects/:name' do
+    if params[:name] == 'new'
       erb(:new_project)
     else
-      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
+      @directory = Pathname.new("#{projects_root}/#{params[:name]}")
 
-      if(@dir.directory? && @dir.readable?)
+      if(@directory.directory? && @directory.readable?)
         erb(:show_project)
       else
-        session[:flash] = { danger: "#{@dir} does not exist" }
+        session[:flash] = { danger: "#{@directory} does not exist" }
         redirect(url('/'))
       end
 
@@ -791,7 +848,7 @@ We'll be updating this in later phases.
 The entire `views/project_show.erb` at this stage is given below.
 
 ```diff
--Showing project at <%= @dir %>
+-Showing project at <%= @directory %>
 +<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
 +
 +  <div class="col-md-12">
@@ -830,7 +887,7 @@ The entire `views/project_show.erb` at this stage is given below.
 +      </div>
 +
 +      <div>
-+        <input type="hidden" name="dir" id="dir" value="<%= @dir %>" required>
++        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
 +      </div>
 +
 +    </div> <!-- end class="row" -->
@@ -976,7 +1033,7 @@ so refreshing the page at this point will throw an error!
 ```
 
 To get the page to render correctly, we need to define the [instance variable]
-`@project_name`. Let's do that in the `projects#show` route (` get '/projects/:dir' do` method).
+`@project_name`. Let's do that in the `projects#show` route (` get '/projects/:name' do` method).
 Here, just before we render the page (through `erb(:show_project)` method call)
 we can define the [instance variable] `@project_name`. This takes the name of
 the directory, changes the underscores to spaces and capitalizes it for
@@ -987,10 +1044,10 @@ human readability.
 ```diff
        erb(:new_project)
      else
-       @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
-+      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+       @directory = Pathname.new("#{projects_root}/#{params[:name]}")
++      @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
 
-       if(@dir.directory? && @dir.readable?)
+       if(@directory.directory? && @directory.readable?)
          erb(:show_project)
 ```
 
@@ -1045,17 +1102,17 @@ class App < Sinatra::Base
     erb(:index)
   end
 
-  get '/projects/:dir' do
-    if params[:dir] == 'new'
+  get '/projects/:name' do
+    if params[:name] == 'new'
       erb(:new_project)
     else
-      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
-      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+      @directory = Pathname.new("#{projects_root}/#{params[:name]}")
+      @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
 
-      if(@dir.directory? && @dir.readable?)
+      if(@directory.directory? && @directory.readable?)
         erb(:show_project)
       else
-        session[:flash] = { danger: "#{@dir} does not exist" }
+        session[:flash] = { danger: "#{@directory} does not exist" }
         redirect(url('/'))
       end
 
@@ -1131,7 +1188,7 @@ end
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @dir %>" required>
+        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -1194,7 +1251,7 @@ Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
 +
 +    blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
 +    walltime = format('%02d:00:00', params[:walltime])
-+    dir = params[:dir]
++    dir = params[:name]
 +
 +    args = ['-J', "blender-#{blend_file}", '--parsable', '-A', params[:account]]
 +    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
@@ -1261,7 +1318,7 @@ class App < Sinatra::Base
 
     blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
     walltime = format('%02d:00:00', params[:walltime])
-    dir = params[:dir]
+    dir = params[:name]
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
@@ -1281,18 +1338,18 @@ class App < Sinatra::Base
     erb(:index)
   end
 
-  get '/projects/:dir' do
-    if params[:dir] == 'new'
+  get '/projects/:name' do
+    if params[:name] == 'new'
       erb(:new_project)
     else
-      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
-      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+      @directory = Pathname.new("#{projects_root}/#{params[:name]}")
+      @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
       @flash = session.delete(:flash)
 
-      if(@dir.directory? && @dir.readable?)
+      if(@directory.directory? && @directory.readable?)
         erb(:show_project)
       else
-        session[:flash] = { danger: "#{@dir} does not exist" }
+        session[:flash] = { danger: "#{@directory} does not exist" }
         redirect(url('/'))
       end
 
@@ -1339,12 +1396,12 @@ we call `@images`.
 `app.rb`
 
 ```diff
-       @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
-       @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+       @directory = Pathname.new("#{projects_root}/#{params[:name]}")
+       @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
        @flash = session.delete(:flash)
-+      @images = Dir.glob("#{@dir}/*.png")
++      @images = Dir.glob("#{@directory}/*.png")
  
-       if(@dir.directory? && @dir.readable?)
+       if(@directory.directory? && @directory.readable?)
          erb(:show_project)
 ```
 
@@ -1485,7 +1542,7 @@ class App < Sinatra::Base
 
     blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
     walltime = format('%02d:00:00', params[:walltime])
-    dir = params[:dir]
+    dir = params[:name]
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
@@ -1505,19 +1562,19 @@ class App < Sinatra::Base
     erb(:index)
   end
 
-  get '/projects/:dir' do
-    if params[:dir] == 'new'
+  get '/projects/:name' do
+    if params[:name] == 'new'
       erb(:new_project)
     else
-      @dir = Pathname.new("#{projects_root}/#{params[:dir]}")
-      @project_name = @dir.basename.to_s.gsub('_', ' ').capitalize
+      @directory = Pathname.new("#{projects_root}/#{params[:name]}")
+      @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
       @flash = session.delete(:flash)
-      @images = Dir.glob("#{@dir}/*.png")
+      @images = Dir.glob("#{@directory}/*.png")
 
-      if(@dir.directory? && @dir.readable?)
+      if(@directory.directory? && @directory.readable?)
         erb(:show_project)
       else
-        session[:flash] = { danger: "#{@dir} does not exist" }
+        session[:flash] = { danger: "#{@directory} does not exist" }
         redirect(url('/'))
       end
 
@@ -1628,7 +1685,7 @@ end
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @dir %>" required>
+        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -1696,7 +1753,7 @@ to none to make it invisible) with on data attribute for the directory.
      </div>
  </form>
 +
-+<div class='d-none' id="project_config" data-directory="<%= @dir %>">
++<div class='d-none' id="project_config" data-directory="<%= @directory %>">
 +</div>
 ```
 
@@ -2066,3 +2123,7 @@ more to do. Here are a couple examples of things you can add to this application
 [id]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id
 [children]: https://developer.mozilla.org/en-US/docs/Web/API/Element/children
 [nav]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nav
+[input]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input
+[action]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form#action
+[label]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label
+[FileUtils]: https://docs.ruby-lang.org/en/master/FileUtils.html
