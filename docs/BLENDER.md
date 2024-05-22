@@ -7,18 +7,36 @@ It attempts to break features out into stages.
 
 ## 1. Start the new projects page.
 
-This will add the ability to create new projects.
+First we want the ability to create new rendering projects.
 
 ### 1a. Add the link to the navigation bar.
 
-We want to create a page that users can navigate to to create a new project.
-So the first thing we need to do is to add a link to the layout using a
-[list item] and an [anchor].  We'll also add an [idiomatic text] tag to get the
-camera icon.
+In this step we'll add a link ([anchor (a)]) in the navigation bar
+([nav]) that points to the pages we'll setup in later steps.
 
-**Be sure to add the [list item] (li) as a child of the existing [unorderd list] (ul)**
+You may have noticed that the navigation bar ([nav]) already
+exists in `views/layouts.erb`. It already has one link that
+points to the root of this project.
 
-`views/layout.erb`
+The structure of the links in the navigation bar ([nav]) are
+as follows: There is one single [unordered list (ul)] with many
+[list item (li)]s as children. Within the [list item (li)] is an
+[anchor (a)] that has an [href] that points to the page we'll be
+creating in later steps. Within the [anchor (a)] is an [idiomatic text (i)]
+tag for icons and the actual text we'll display for users.
+
+```
+ul
+  li
+    a
+      i
+      "text to display"
+```
+
+**Be sure to add the [list item (li)] (li) as a child of the existing [unordered list (ul)] (ul)**
+
+<details>
+  <summary>official solution - addition to views/layout.erb</summary>
 
 ```diff
              <i class="fas fa-home"></i> <%= title %>
@@ -31,9 +49,12 @@ camera icon.
 +          </a>
 +        </li>
 ```
+</details>
+
+<br>
 
 <details>
-<summary>full views/layout.erb file</summary>
+  <summary>official solution - full views/layout.erb file</summary>
 
   ```erb
   <!doctype html>
@@ -96,7 +117,7 @@ camera icon.
 </details>
 <br>
 
-Now if you refresh the page, you should see a camera in the navigatiion bar.
+Now if you refresh the page, you should see a camera in the navigation bar.
 However, if you click it the webserver will return an error because we haven't
 created the server actions or pages yet.
 
@@ -169,7 +190,7 @@ respond to [POST] requests as well.
 +    logger.info("Trying to create a project with: #{params.inspect}")
 +    @flash = { info: "Trying to create a project with: #{params.inspect}" }
 +
-+    erb :new_project
++    erb(:new_project)
 +  end
  end
 ```
@@ -287,7 +308,7 @@ Here you'll see we create a helper method called `projects_root`.
 +
 +    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
 
--    erb :new_project
+-    erb(:new_project)
 +    session[:flash] = { info: "made new project '#{params[:name]}'" }
 +    redirect(url("/projects/#{dir}"))
    end
@@ -545,8 +566,8 @@ list alphabetically is just a nice thing to do.
 ```
 
 Now we can use the helper method `project_dirs` to loop through each
-project directory and create a [list item] (li) for each entry and create
-an [anchor] (a) link so users can navigate to the `projects#show` route
+project directory and create a [list item (li)] (li) for each entry and create
+an [anchor (a)] (a) link so users can navigate to the `projects#show` route
 for each project.
 
 `views/index.erb`
@@ -1319,8 +1340,8 @@ routes. The bootstrap [javascript] should be iterating through these images.
 That's all well and good, but should still enable a way for users to navigate
 through all the images. 
 
-First, we'll add an [unordered list] with [list item]s to be our carousel
-indicators.  We'll add this [unordered list] as a child to `blend_image_carousel`
+First, we'll add an [unordered list (ul)] with [list item (li)]s to be our carousel
+indicators.  We'll add this [unordered list (ul)] as a child to `blend_image_carousel`
 and a sibling to `blend_image_carousel_inner`.
 
 ```diff
@@ -1343,7 +1364,7 @@ one for each image so that users can navigate directly to any given image.
 Now that we have carousel indicators, we also want to add buttons to
 navigate to the previous and next images.
 
-We'll use [anchor]s for this. Again, they'll be a child of `blend_image_carousel`
+We'll use [anchor (a)]s for this. Again, they'll be a child of `blend_image_carousel`
 and a sibling to `blend_image_carousel_inner`.
 
 ```diff
@@ -1940,10 +1961,11 @@ more to do. Here are a couple examples of things you can add to this application
 
 
 [form]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form
-[list item]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li
-[unorderd list]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ul
-[anchor]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
-[idiomatic text]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i
+[list item (li)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li
+[unordered list (ul)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ul
+[anchor (a)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a
+[href]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a#href
+[idiomatic text (i)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/i
 [GET]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/GET
 [POST]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods/POST
 [tap]: https://docs.ruby-lang.org/en/master/Kernel.html#method-i-tap
@@ -1991,3 +2013,4 @@ more to do. Here are a couple examples of things you can add to this application
 [setAttribute]: https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute
 [id]: https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/id
 [children]: https://developer.mozilla.org/en-US/docs/Web/API/Element/children
+[nav]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/nav
