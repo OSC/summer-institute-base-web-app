@@ -63,7 +63,7 @@ In this step we'll add a link ([anchor (a)]) in the navigation bar
 ([nav]) that points to the pages we'll setup in later steps.
 
 You may have noticed that the navigation bar ([nav]) already
-exists in `views/layouts.erb`. It already has one link that
+exists in `views/layout.erb`. It already has one link that
 points to the root of this project.
 
 The structure of the links in the navigation bar ([nav]) are
@@ -73,8 +73,12 @@ as follows: There is one single [unordered list (ul)] with many
 creating in later steps. Within the [anchor (a)] is an [idiomatic text (i)]
 tag for icons and the actual text we'll display for users.
 
+The [anchor (a)]'s [href] needs a URL to point to.
+We can use the `url` [Sinatra] function to generate one for us.
+The [href] should point to `url('/projects/new')`.
+
 ```
-ul
+ul (already exists)
   li
     a
       i
