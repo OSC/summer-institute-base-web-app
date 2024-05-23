@@ -648,16 +648,31 @@ end
 </details>
 <br>
 
-## 3. Update the projects#index page to list all the projects.
+## 3. Update the / (index) page to list all the projects.
 
-Now that we can create projects, we need the `projects#index` route
+### 3a. Find all the project directories.
+
+Now that we can create projects, we need the `/` (index) route
 to list them all out so that we can navigate to and from them.
+
+
+In this step you'll need to generate an [Array] of all the project
+directories.
+
+Tips:
+* You should already have helper method `projects_root` that is the
+  parent directory for all the projects.
+* You can use the [Dir] class to find children of that directory.
+* You'll need to show only directories, filtering out files. The
+  [Pathname] class is a great choice to help you do this.
 
 Let's write a helper method called `project_dirs` that will return a list
 of all the children of `projects_root` through the [Dir] class. Sorting the
 list alphabetically is just a nice thing to do.
 
-`app.rb`
+<details>
+  <summary>official solution - addition to app.rb file</summary>
+
 
 ```diff
      'Summer Instititue Starter App'
@@ -673,13 +688,37 @@ list alphabetically is just a nice thing to do.
      logger.info('requsting the index')
      @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
 ```
+</details>
+
+<br>
+
+### 3b. Find all the project directories.
 
 Now we can use the helper method `project_dirs` to loop through each
-project directory and create a [list item (li)] (li) for each entry and create
-an [anchor (a)] (a) link so users can navigate to the `projects#show` route
-for each project.
+project directory and create an [unordered list (ul)] with a [list item (li)]
+for each project directory and create an [anchor (a)] link so users
+can navigate to the `/projects/:directory` route for each project.
 
-`views/index.erb`
+Additionally, within the [anchor (a)] we can use [idiomatic text (i)] tags
+for icons to make it look nice and a [paragraph (p)] tag to display
+the project name.
+
+Here is the structure we're looking for. Note that you can also use
+[div] tags for spacing and sizing.
+
+So, this is the structure we're going for more or less.  Note that
+you may opt for an outer [div] to create the right size of icons.
+
+```
+ul
+  li
+    a
+      i
+      p
+```
+
+<details>
+  <summary>official solution - addition to views/index.erb file</summary>
 
 ```diff
    <%= title %>
@@ -689,8 +728,8 @@ for each project.
 +<h2 class="my-4">Projects</h2>
 +
 +<div class='row my-5'>
-+  <ol class='list-group list-group-horizontal flex-wrap col-md-12'>
-+    <% project_dirs.each do |project_dir| %>
++  <ul class='list-group list-group-horizontal flex-wrap col-md-12'>
++    <% project_directories.each do |project_dir| %>
 +    <li class='list-group-item btn btn-outline-dark m-3 border'>
 +      <div>
 +        <a href='<%= url("/projects/#{project_dir}") %>' class="text-center">
@@ -700,9 +739,11 @@ for each project.
 +      </div>
 +    </li>
 +    <% end %>
-+  </ol>
++  </ul>
 +</div>
 ```
+</details>
+<br>
 
 <details>
   <summary>full app.rb file</summary>
@@ -2127,3 +2168,4 @@ more to do. Here are a couple examples of things you can add to this application
 [action]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form#action
 [label]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label
 [FileUtils]: https://docs.ruby-lang.org/en/master/FileUtils.html
+[paragraph (p)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p
