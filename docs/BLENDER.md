@@ -1039,7 +1039,8 @@ available Unix groups. Let's add this helper for `accounts` that:
     are valid projects for the job scheduler).
 
 
-`app.rb`
+<details>
+  <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
   def project_dirs
@@ -1060,13 +1061,16 @@ available Unix groups. Let's add this helper for `accounts` that:
      logger.info('requsting the index')
      @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
 ```
+</details>
+<br>
 
 Now that the account list is populated on the backend server,
 we can use them in the view.  Instead of having the 1 temporary
 [select] option - let's use some [ERB] to list out all the possible
 account options that one could use.
 
-`views/show_project.erb`
+<details></details>
+  <summary>official solution - addition to views/show_project.erb file.</summary>
 
 ```diff
        <div class="form-group col-md-6">
@@ -1079,6 +1083,8 @@ account options that one could use.
          </select>
        </div>
 ```
+</details>
+<br>
 
 ### 4c. Populate the blend file list.
 
