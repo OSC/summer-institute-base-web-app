@@ -88,7 +88,7 @@ ul (already exists)
 **Be sure to add the [list item (li)] (li) as a child of the existing [unordered list (ul)] (ul)**
 
 <details>
-  <summary>official solution - addition to views/layout.erb</summary>
+  <summary>official solution - addition to views/layout.erb.</summary>
 
 ```diff
              <i class="fas fa-home"></i> <%= title %>
@@ -106,7 +106,7 @@ ul (already exists)
 <br>
 
 <details>
-  <summary>official solution - full views/layout.erb file</summary>
+  <summary>official solution - full views/layout.erb file.</summary>
 
   ```erb
   <!doctype html>
@@ -186,7 +186,7 @@ to do this.
 
 
 <details>
-  <summary>official solution - addition to app.rb</summary>
+  <summary>official solution - addition to app.rb.</summary>
 
 ```diff
      @flash = { info: 'Welcome to Summer Institute!' }
@@ -221,7 +221,7 @@ Tips:
   [input]s.
 
 <details>
-  <summary>official solution - addition to views/new_project.erb</summary>
+  <summary>official solution - addition to views/new_project.erb.</summary>
 
 ```diff
 +<h1 class="my-3">Create a new Rendering Project</h1>
@@ -258,7 +258,7 @@ what parameters have been sent to the web server.
 
 
 <details>
-  <summary>official solution - addition to app.rb file</summary>
+  <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
      @flash = { info: 'Welcome to Summer Institute!' }
@@ -282,7 +282,7 @@ what parameters have been sent to the web server.
 <br>
 
 <details>
-  <summary>official solution - full app.rb file</summary>
+  <summary>official solution - full app.rb file.</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -329,7 +329,7 @@ end
 <br>
 
 <details>
-  <summary>official solution - full views/new_project.erb file</summary>
+  <summary>official solution - full views/new_project.erb file.</summary>
 
 ```erb
 <div class="d-flex justify-content-center">
@@ -387,7 +387,7 @@ Tips:
 <br>
 
 <details>
-  <summary>official solution - addition to app.rb</summary>
+  <summary>official solution - addition to app.rb.</summary>
 
 ```diff
      erb(:new_project)
@@ -513,7 +513,7 @@ Tips:
 <br>
 
 <details>
-  <summary>official solution - addition to app.rb</summary>
+  <summary>official solution - addition to app.rb.</summary>
 
 ```diff
 -  get '/projects/new' do
@@ -550,7 +550,7 @@ Tips:
 
 
 <details>
-  <summary>official solution - addition to app.rb</summary>
+  <summary>official solution - addition to app.rb.</summary>
 
 ```diff
    get '/projects/:name' do
@@ -573,14 +573,14 @@ Tips:
 <br>
 
 <details>
-  <summary>official solution - views/show_project.erb file</summary>
+  <summary>official solution - views/show_project.erb file.</summary>
 
 ```erb
 Showing project at <%= @directory %>
 ```
 </details>
 
-The full `views/show_project.erb` is already shown above.
+<br>
 
 <details>
   <summary>full app.rb file</summary>
@@ -671,7 +671,7 @@ of all the children of `projects_root` through the [Dir] class. Sorting the
 list alphabetically is just a nice thing to do.
 
 <details>
-  <summary>official solution - addition to app.rb file</summary>
+  <summary>official solution - addition to app.rb file.</summary>
 
 
 ```diff
@@ -718,7 +718,7 @@ ul
 ```
 
 <details>
-  <summary>official solution - addition to views/index.erb file</summary>
+  <summary>official solution - addition to views/index.erb file.</summary>
 
 ```diff
    <%= title %>
@@ -904,9 +904,8 @@ Tips:
   `method` will be `post`.
 
 
-The entire `views/project_show.erb` at this stage is given below.
 <details>
-  <summary>official solution - addition to views/project_show.erb file</summary>
+  <summary>official solution - addition to views/project_show.erb file.</summary>
 
 ```diff
 -Showing project at <%= @directory %>
@@ -965,7 +964,7 @@ The entire `views/project_show.erb` at this stage is given below.
 <br>
 
 <details>
-  <summary>entire views/project_show.erb file</summary>
+  <summary>official solution - full views/project_show.erb file.</summary>
 
 ```html
 <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
@@ -1174,7 +1173,7 @@ human readability.
 ```
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file.</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -1391,7 +1390,7 @@ Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
 ```
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file.</summary>
 
 ```ruby
 # frozen_string_literal: true
