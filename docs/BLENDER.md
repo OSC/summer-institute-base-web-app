@@ -1069,7 +1069,7 @@ we can use them in the view.  Instead of having the 1 temporary
 [select] option - let's use some [ERB] to list out all the possible
 account options that one could use.
 
-<details></details>
+<details>
   <summary>official solution - addition to views/show_project.erb file.</summary>
 
 ```diff
@@ -1083,6 +1083,7 @@ account options that one could use.
          </select>
        </div>
 ```
+
 </details>
 <br>
 
