@@ -850,23 +850,34 @@ end
 
 Now that we can create projects and can navigate to and from them,
 this is where the real work of the app starts.  This application
-is meant to generate frames from a blend file. So, we need to provide
-users with a [form] to fill out to submit a job with various
-settings like how many frames they want to render from which blend file
-and so on.
+is meant to generate frames from a blend file. So, in the `show_project.erb`
+page we need to provide users with a [form] to fill out to submit a job
+with various settings like how many frames they want to render from which
+blend file and so on.
+
+**Note that this form should POST requests to /render/frames and this POST request will not work until we finish step 5.**
+
 
 We need a [form] that users can fill out these fields:
   * `blend_file` [select] - which blend file they want to generate frames from.
   * `account` [select] - the account code to be used (jobs require an account for billing purposes).
   * `num_cpus` [number input] - how many CPUs the job will use.
-  * `frame_range` [text input] - the range of frames the job will generate (like `1-100` will generate frames 1 through 100).
+    This should have a minimum of 4 and a maximum of 48.
+  * `frame_range` [text input] - the range of frames the job will generate
+    (like `1-100` will   generate frames 1 through 100).  Note `blender`
+    expects this field to be a specific format and that we can check for specific
+    patterns using the `pattern` attribute.
   * `walltime` [number input] - how long the job will run for.
   * `project_directory` [hidden input] - this will be a hidden field that tells the job where to output the images.
 
-Note that we'll also need a [button] to submit the [form].
+Note that we'll also need a [button] to submit the [form] and that
+all fields are required.
 
-The structure for this [form] is as follows. You can read this as `<tag name>.<css class list>`.
-So a `div.row` would be `<div class="row">...</div>`.
+Beyond just providing the [form] for functionality, we should
+style it too so that it looks visually pleasing to users. The
+official solution provides the structure for this [form] as follows.
+You can read this as `<tag name>.<css class list>`. So a `div.row`
+would be `<div class="row">...</div>` and so on.
 
 `<sizing class>` is a column class like `col-md-6` or similar. We want the form to be presented
 in a visually appealing way using the [bootstrap grid] system.  We want the first 2 fields to be
@@ -881,12 +892,21 @@ form
         <field>.form-control
 ```
 
-As a first pass, we're going to put temporary values in the [select] options.
-We'll be updating this in later phases.
+Tips:
+* As a first pass, you should put temporary values in the [select] options
+  for `account` and `blend_file`.  We'll be updating this in later phases.
+* Create the form with all the fields first, then add the [div]s and style it.
+* After styling it, at a minimum you should add [label]s. Additionally,
+  you could add [small] help text for some fields.
+* Remember [form]s need an [action] and `method` attributes to know how
+  and where to submit the form. The [action] will be `<%= url("/render/frames") %>`
+  (even though we haven't implemented this on the server yet) and the
+  `method` will be `post`.
 
-`views/project_show.erb`
 
 The entire `views/project_show.erb` at this stage is given below.
+<details>
+  <summary>official solution - addition to views/project_show.erb file</summary>
 
 ```diff
 -Showing project at <%= @directory %>
@@ -940,6 +960,67 @@ The entire `views/project_show.erb` at this stage is given below.
 +
 +</form>
 ```
+</details>
+
+<br>
+
+<details>
+  <summary>entire views/project_show.erb file</summary>
+
+```html
+<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+  <div class="col-md-12">
+    <div class="row">
+
+      <div class="form-group col-md-6">
+        <label for="blend_file">Blend File</label>
+        <select name="blend_file" id="blend_file" class="form-control">
+          <option value="tmp">Temp</option>
+        </select>
+      </div>
+
+      <div class="form-group col-md-6">
+        <label for="account">Account</label>
+        <select name="account" id="account" class="form-control">
+          <option value="tmp">Temp</option>
+        </select>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="num_cpus">CPUs</label>
+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <small class="form-text text-muted">More CPUs means less time rendering.</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="frame_range">Frame Range (N-M)</label>
+        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="walltime">Walltime</label>
+        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
+        <small class="form-text text-muted">Hours</small>
+      </div>
+
+      <div>
+        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+      </div>
+
+    </div> <!-- end class="row" -->
+
+    <div class="row justify-content-md-end my-1">
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+    </div>
+  </div>
+
+</form>
+```
+</details>
+
+<br>
 
 ### 4b. Populate the account list.
 
@@ -2169,3 +2250,6 @@ more to do. Here are a couple examples of things you can add to this application
 [label]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/label
 [FileUtils]: https://docs.ruby-lang.org/en/master/FileUtils.html
 [paragraph (p)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p
+[small]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/small
+
+
