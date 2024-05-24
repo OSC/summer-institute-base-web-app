@@ -697,7 +697,7 @@ list alphabetically is just a nice thing to do.
 Now we can use the helper method `project_dirs` to loop through each
 project directory and create an [unordered list (ul)] with a [list item (li)]
 for each project directory and create an [anchor (a)] link so users
-can navigate to the `/projects/:directory` route for each project.
+can navigate to the `/projects/:name` route for each project.
 
 Additionally, within the [anchor (a)] we can use [idiomatic text (i)] tags
 for icons to make it look nice and a [paragraph (p)] tag to display
@@ -1587,7 +1587,7 @@ end
 
 ### 6a. Start the image carousel.
 
-Now that we can submit jobs, step 6 adds an image carousel to the `projects#show`
+Now that we can submit jobs, step 6 adds an image carousel to the `get /projects/:name`
 page so that users can see the output of the render job.
 
 We're going to use the [Bootstrap carousel] library to show the images on the page
