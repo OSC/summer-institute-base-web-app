@@ -1369,8 +1369,17 @@ end
 
 Step 4 added a [form] so that users can render frames from within
 a project view. However, the route for rendering frames does not
-exist yet. In this step we'll make that route and start an [HPC]
-job that renders the frames from the chosen blend file.
+exist yet (or doesn't do anything). In this step we'll make that
+route and start an [HPC] job that renders the frames from the
+chosen blend file.
+
+If you haven't already, you can add a starter `post '/render/frames`
+method. You can simply `redirect` somewhere else in this function.
+It may also be nice to provide a `flash` message, perhaps containing
+the `params` object.
+
+<details>
+  <summary>official solution - addition to app.rb file</summary>
 
 ```diff
      end
@@ -1385,9 +1394,10 @@ job that renders the frames from the chosen blend file.
      logger.info('requsting the index')
      @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
 ```
+</details>
 
-Now if you press `Render Frames` in the [form] of the `projects#show` page
-you'll get redirected to the root [URL] with a flash message.
+Now if you press `Render Frames` in the [form] of the `get '/projects/:name`
+page you'll get redirected to the root [URL] with a flash message.
 
 At this point, we need to buildout the [sbatch] command to run the job given
 all the input that the user entered in the [form].
@@ -1395,15 +1405,49 @@ all the input that the user entered in the [form].
 [sbatch] takes many command line arguments. Here's what we'll be setting
 from the `params` variable the user provides in the [form]:
   * `account` will set the `-A` flag.
-  * `walltime` will set `-t` flag after being formatted.
+  * `walltime` will set `-t` flag after being formatted to `HH:00:00`.
   * `num_cpus` will set `-n` flag.
-  * `blend_file` will populate the `BLEND_FILE_PATH` environment variable
-    and will be used to set the job's name in the `-J` flag.
-  * `dir` will populate the `OUTPUT_DIR` environment variable and be used to set the
-    job's output location for the `--output` flag.
+  * `blend_file` will populate the `BLEND_FILE_PATH` environment variable.
+  * `project_directory` will populate the `OUTPUT_DIR` environment variable
+    and be used to set the job's output location for the `--output` flag.
   * `frame_range` will populate the `FRAME_RANGE` environment variable.
+  * We can hard code the cluster to be `pitzer` through the `-M` flag.
+  * You should also hard code the `--parseable` flag so that the command
+    output is parseable.
+  * We should also set the job name with the `-J` option. This job name
+    should have the `blend_file` parameter in it to distinguish the job.
+  * The last argument to `sbatch` will be the shell script we're trying to
+    run in the job. This shell script already exists in this project at
+    `scripts/render_frames.sh`.
 
-Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
+We can use backtick characters (`` ` ``) to issue a command from the Ruby server.
+For example `` `echo 'hello world'` `` within your Ruby program will issue the
+command `echo 'hello world'`.
+
+Tips:
+* Start the `sbatch` command with as few arguments as possible.
+  Get it to launch the job, then add parameters.
+* The [format] function to format the `params[:walltime]` into the
+  `HH:00:00` format.
+* You can assign the output of commands to a variable when running
+  commands with backticks (`` ` ``) in Ruby.
+* The official solution takes the output of the `sbatch` command
+  and displays a `flash` message when the next page is loaded.
+  You can extract this message from the `session` object in the
+  `get '/projects/:name'` method.
+
+<details>
+  <summary>official solution - addition to app.rb file</summary>
+
+```diff
+     else
+         @directory = Pathname.new("#{projects_root}/#{name}")
+         @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
++        @flash = session.delete(:flash)
+ 
+         if(@directory.directory? && @directory.readable?)
+             erb(:show_project)
+```
 
 ```diff
    post '/render/frames' do
@@ -1413,9 +1457,9 @@ Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
 +
 +    blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
 +    walltime = format('%02d:00:00', params[:walltime])
-+    dir = params[:name]
++    dir = params[:project_directory]
 +
-+    args = ['-J', "blender-#{blend_file}", '--parsable', '-A', params[:account]]
++    args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
 +    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
 +    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
 +    args.concat ['--output', "#{dir}/%j.out"]
@@ -1429,6 +1473,9 @@ Beyond that, we can hard code the cluster to be `pitzer` through the `-M` flag.
  
    get '/' do
 ```
+</details>
+
+<br>
 
 <details>
   <summary>official solution - full app.rb file.</summary>
@@ -1480,7 +1527,7 @@ class App < Sinatra::Base
 
     blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
     walltime = format('%02d:00:00', params[:walltime])
-    dir = params[:name]
+    dir = params[:project_directory]
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
@@ -1704,7 +1751,7 @@ class App < Sinatra::Base
 
     blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
     walltime = format('%02d:00:00', params[:walltime])
-    dir = params[:name]
+    dir = params[:project_directory]
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
@@ -2293,3 +2340,5 @@ more to do. Here are a couple examples of things you can add to this application
 [small]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/small
 [map]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-map
 [File]: https://docs.ruby-lang.org/en/master/File.html
+[format]: https://docs.ruby-lang.org/en/master/format_specifications_rdoc.html
+
