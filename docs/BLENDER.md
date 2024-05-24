@@ -1093,20 +1093,26 @@ Similar to the step above for accounts - let's populate the
 [select] [form] field for the choice of blend file (`blend_file` [select]).
 
 Note that this step requires you downloading a blend file or two.  At the
-time of writing, version `3.6.3` is what's available. Blender distributes
+time of writing, version `4.2` is what's available. Blender distributes
 [blender demo files] that are freely available. So please download
-a blend file or two that is compatible with `3.6.3` and place them in the
+a blend file or two that is compatible with `4.2` and place them in the
 `blend_files` directory before starting this step.
 
 Once you've downloaded one or two [blender demo files], we first need to
 get the backend server to recognize the files in the `blend_files` folder.
 
 Let's add a `blend_files` helper method in the server to generate a list of
-files that are available. We'll use the [Dir] module with the `glob` API
-to use wildcards like `*` to list all files in that directory that end
-with the `.blend` extension.
+files that are available. The official solution uses the [Dir] module with
+the `glob` API to use wildcards like `*` to list all files in that directory
+that end with the `.blend` extension.
 
-`app.rb`
+Tips:
+* [Dir].glob will return the full path of the file, so you
+  should also [map] that full file to the file's basename. You can
+  use [File] class find the basename.
+
+<details>
+  <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
      end
@@ -1122,10 +1128,15 @@ with the `.blend` extension.
      logger.info('requsting the index')
      @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
 ```
+</details>
+<br>
 
 Now that the server can list all our blend files, we need to update
-the view to list them out. Here we can use `each` to iterate through
+the view to list them out. Here we can use [each] to iterate through
 the collection and generate a [select] option for each blend file.
+
+<details>
+  <summary>official solution - addition to views/show_project.erb file</summary>
 
 ```diff
        <div class="form-group col-md-6">
@@ -1138,36 +1149,33 @@ the collection and generate a [select] option for each blend file.
          </select>
        </div>
 ```
+</details>
+<br>
 
 ### 4d. Fixup the show_project page.
 
-First, let's touch up the `views/show_project.erb` file for no
-other reason than to make it look just a little nicer.
+This step is just a couple UI enhancements to make the page
+layout a little bit better in `get /projects/:name`.
 
-Let's add two [heading elements] to add some headers to the page.
-Note that the [instance variable] `@project_name` isn't defined yet,
-so refreshing the page at this point will throw an error!
+We'd like to add the project name to the page. Before we can
+add it to the HTML page, we need to define it in the server.
 
-`views/show_project.erb`
+Recall that the directory name is the name of the project.
+Also recall that we did some sanitization to the directory
+changing spaces (` `) to underscores (`_`), so we'll want
+to reverse that operation before presenting it in the UI.
 
-```diff
-+<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
-+
-+<h2>Render Frames</h2>
-+
- <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+Tips:
+* `@directory` is a [Pathname], which we can use `basename` on
+  to get the directory name (and not the full path).
+* Refer to another location where we used `gsub` on a string
+  to change it.
+* Strings also provide a `capitalize` function.
+* `project_name` should be an [instance variable] (i.e., `@project_name`).
 
-   <div class="col-md-12">
-```
 
-To get the page to render correctly, we need to define the [instance variable]
-`@project_name`. Let's do that in the `projects#show` route (` get '/projects/:name' do` method).
-Here, just before we render the page (through `erb(:show_project)` method call)
-we can define the [instance variable] `@project_name`. This takes the name of
-the directory, changes the underscores to spaces and capitalizes it for
-human readability.
-
-`app.rb`
+<details>
+  <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
        erb(:new_project)
@@ -1178,6 +1186,32 @@ human readability.
        if(@directory.directory? && @directory.readable?)
          erb(:show_project)
 ```
+</details>
+<br>
+
+
+Now that the server has the [instance variable] `@project_name`,
+we can display it in the web page.
+
+The official solution uses [heading elements] to display the
+name of the project as well as the section of the page that
+you're rendering frames in the [form].
+
+
+<details>
+  <summary>official solution - addition to views/show_project.erb file.</summary>
+
+```diff
++<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
++
++<h2>Render Frames</h2>
++
+ <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+   <div class="col-md-12">
+```
+</details>
+<br>
 
 <details>
   <summary>official solution - full app.rb file.</summary>
@@ -2257,5 +2291,5 @@ more to do. Here are a couple examples of things you can add to this application
 [FileUtils]: https://docs.ruby-lang.org/en/master/FileUtils.html
 [paragraph (p)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/p
 [small]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/small
-
-
+[map]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-map
+[File]: https://docs.ruby-lang.org/en/master/File.html
