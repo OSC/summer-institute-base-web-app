@@ -1590,8 +1590,8 @@ end
 Now that we can submit jobs, step 6 adds an image carousel to the `get /projects/:name`
 page so that users can see the output of the render job.
 
-We're going to use the [Bootstrap carousel] library to show the images on the page
-in a visually pleasing way.
+The official solution uses the [Bootstrap carousel] library to show the
+images on the page in a visually pleasing way.
 
 To complete this step we need to 
   * Find all the images on the backend server
@@ -1602,7 +1602,8 @@ the directory where they should be. This will find all the files in the director
 that end with `.png` extension and assign this [Array] to an [instance variable]
 we call `@images`.
 
-`app.rb`
+<details>
+  <summary>official solution - addition to app.rb file</summary>
 
 ```diff
        @directory = Pathname.new("#{projects_root}/#{params[:name]}")
@@ -1613,19 +1614,49 @@ we call `@images`.
        if(@directory.directory? && @directory.readable?)
          erb(:show_project)
 ```
+</details>
+<br>
 
-The [HTML] to show the images is far more complicated. Let's start simple
-by creating an outer [div] with the `row my-3` [CSS Class]es just to give
-us some spacing. The next [div] has the [CSS Class]es `carousel slide` 
-which is a part of the [Bootstrap carousel] library to get the carousel
-working. Lastly need a [div] with the [CSS CLass] `carousel-inner`. This
-is where all our images will go.
+The [HTML] to show the images is far more complicated.
+Looking at the [Bootstrap carousel] documentation we need to
+create some outer [div]s around our [img]s so that [Bootstrap]
+knows where to apply the changes.
 
-Then, with those outer [div]s in place - we can loop through [each] of
-the images to create a [div] with the classes `carousel-item active`
-which holds an [img] that is our image.
+This is the basic structure of elements with [CSS Class]es
+that we'll need to get this on the page.
 
-`views/show_project.erb`
+```
+div[class="carousel slide" data-ride="carousel"]
+  div[class="carousel-inner]
+
+    <!-- loop start -->
+    div[class="carousel-item"] (the first image will also have the 'active' class)
+      img
+    <!-- loop end -->
+```
+
+This works by:
+* Applying the [HTML data attributes] `data-ride="carousel"`
+  to the outer most `div`.
+* Applying the [CSS Classs]es `carousel` and `slide` to the
+  outer most div.
+* Applying the [CSS Classs] `carousel-inner` to the inner
+  [div].
+* Looping through all the `@images` to create a [div] that
+  has the [CSS CLass] `carousel-item`.  This [div] will have
+  a child [img] element that is the actual image.
+  * The very first image will additionally have the [CSS CLass]
+    `active`. Instead of [each] you can use [each_with_index]
+    to supply the index of the [Array] and apply the `active`
+    class when the index is zero.
+  * The `@images` is an [Array] of full paths to the file.
+    You can use `/pun/sys/dashboard/files/fs<%= image %>` as
+    the `src` attribute for the [img].
+
+
+
+<details>
+  <summary>official solution - addition to views/show_project.erb file</summary>
 
 ```diff
  <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
@@ -1649,18 +1680,56 @@ which holds an [img] that is our image.
 +
  <h2>Render Frames</h2>
 ```
+</details>
+<br>
 
 ### 6b. Add carousel indicators.
 
-With the carousel created, you should see the images in the `projects#show`
+With the carousel created, you should see the images in the `get /projects/:name`
 routes. The bootstrap [javascript] should be iterating through these images.
 
 That's all well and good, but should still enable a way for users to navigate
 through all the images. 
 
 First, we'll add an [unordered list (ul)] with [list item (li)]s to be our carousel
-indicators.  We'll add this [unordered list (ul)] as a child to `blend_image_carousel`
-and a sibling to `blend_image_carousel_inner`.
+indicators. Carousel indicators are the items at the bottom of the carousel
+that users can click on to navigate to specific images.
+
+We'll add this [unordered list (ul)] as a sibling to the [div] with the [CSS Class] `carousel-inner`.
+
+```
+ol[class="carousel-indicators"]
+  <!-- loop start -->
+  li
+  <!-- loop end -->
+```
+
+This works by:
+* Applying the [CSS Class] `carousel-indicators` to the [unordered list (ul)]
+* Each [list item (li)] needs:
+  * A `data-target` [HTML data attributes]. This is a [CSS Selector] that should
+    just be a query for the `id` of `id` of the outer most [div] with the `data-ride="carousel"`.
+    A [CSS Selector] for an `id` is just `#` and the `id` for example `#my_div_id` when
+    `my_div_id` is the `id` of the [div] you're looking for.
+    **Note you may have to add an id to the outer most [div] if you haven't already**.
+  * A `data-slide-to` [HTML data attributes] that is the image number that indicator
+    will slide to. **Note that `data-slide-to` numbers are expected to start at 0.**
+  * The very first [list item (li)] will need the [CSS Class] `active`.
+
+Tips:
+* The [list item (li)]s all need a number to know where to slide to.
+  * The `@images` [instance variable] is an [Array] so you can call
+    `length` on that array to find the length of the [Array].
+  * You can use the [Range] class to create another [Array] that is
+    all the numbers 1 through `@images.length`.
+  * Or you can use [each_with_index] on `@images` and just disregard
+    the image variable, using only the index variable.
+* Note that the [Bootstrap carousel] library expects the `data-slide-to`
+  [HTML data attributes] to start at 0. So if you have 2 images, the
+  `data-slide-to` attributes would be `0` and `1` not `1` and `2`.
+
+<details>
+  <summary>official solution - addition to views/show_project.erb</summary>
 
 ```diff
    <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
@@ -1673,17 +1742,39 @@ and a sibling to `blend_image_carousel_inner`.
 +
      <div id="blend_image_carousel_inner" class="carousel-inner">
 ```
+</details>
+<br>
 
 Now you should have indicators at the bottom of the images. There should be
-one for each image so that users can navigate directly to any given image.
+one for each image. They should be clickable and correctly 
 
 ### 6c. Add carousel previous & next buttons. 
 
 Now that we have carousel indicators, we also want to add buttons to
 navigate to the previous and next images.
 
-We'll use [anchor (a)]s for this. Again, they'll be a child of `blend_image_carousel`
-and a sibling to `blend_image_carousel_inner`.
+We'll use [anchor (a)]s that are siblings to the [div] with the
+[CSS Class] `carousel-inner`.
+
+These [anchor (a)]s will have two children, both of them [span]s.
+The first [span] will be the actual clickable icon. The second
+is for Accessibility of screen readers to indicate what this button
+does (because there's no visual text for what the button does).
+
+Tips:
+* This is the structure with [CSS Class]es. Note that this example is
+  for the previous button. The next button would use `carousel-control-next`
+  and `carousel-control-next-icon` [CSS Class]es.
+
+```
+a[class="carousel-control-prev" role="button" href="#blend_image_carousel" data-slide="prev"]
+  span[class="carousel-control-prev-icon" aria-hidden="true"]
+  span[class="sr-only"]
+    Previous
+```
+
+<details>
+  <summary>official solution - addition to views/show_project.erb file.</summary>
 
 ```diff
      </div> <!-- carousel inner -->
@@ -1700,9 +1791,12 @@ and a sibling to `blend_image_carousel_inner`.
 +
    </div><!-- carousel -->
 ```
+</details>
+
+<br>
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file.</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -1809,7 +1903,7 @@ end
 <br>
 
 <details>
-  <summary>full views/show_project.erb file</summary>
+  <summary>official solution - full views/show_project.erb file.</summary>
 
 ```erb
 <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
@@ -2341,4 +2435,8 @@ more to do. Here are a couple examples of things you can add to this application
 [map]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-map
 [File]: https://docs.ruby-lang.org/en/master/File.html
 [format]: https://docs.ruby-lang.org/en/master/format_specifications_rdoc.html
+[Bootstrap]: https://getbootstrap.com/docs/4.0/getting-started/introduction/
+[Range]: https://docs.ruby-lang.org/en/master/Range.html
+[CSS Selector]: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors
+[span]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span
 
