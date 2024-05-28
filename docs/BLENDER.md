@@ -2017,14 +2017,23 @@ We're using the [jquery] [javascript] framework for convenience.
 
 ### 7a. Start editing app.js
 
-There's already a [javascript] file that's being loaded on every page.
-The file is `public/app.js`. Let's give it just a quick edit so that
-when the page loads it'll 
+The [javascript] file `public/app.js` is already loaded on every page.
+We're going to add to this file in this step.
 
 `jQuery` is a function that will run when the [window page load event]
 is fired. I.e., when the page is loaded.
 
-`public/app.js`
+Let's change this slightly by:
+* Adding a new function called `updateCarousel` that takes no arguments.
+* This new function `updateCarousel` should do something simple like logging
+  some simple message through `console.log`.
+* The block provided to the `jQuery` function should call this new function
+  `updateCarousel`.
+
+**Note that you may have to hard refresh the page (ctrl + shift + r) to download the new app.js file.**
+
+<details>
+  <summary>official solution - update to public/app.js file.</summary>
 
 ```diff
  jQuery(() => {
@@ -2033,9 +2042,11 @@ is fired. I.e., when the page is loaded.
  });
 +
 +function updateCarousel() {
-+  console.log('hello world');
++  console.log('hello world from the updateCarousel function.');
 +}
 ```
+</details>
+<br>
 
 ### 7b. Pass directory to javascript.
 
@@ -2046,10 +2057,21 @@ First we need a way to pass the project's directory to
 the [javascript] running on the client's browser.  We can do this
 through [HTML data attributes].
 
-Let's add a hidden [div] (class `d-none` sets the display attribute
-to none to make it invisible) with on data attribute for the directory.
+Let's add a hidden [div] with on data attribute for the directory.
+The [CSS Class] `d-none` sets the display attribute to none to make
+it invisible.
 
-`views/show_project.erb`
+Tips:
+* A [div] with no text will not be visible on the page. However
+  adding the [CSS Class] `d-none` will ensure that it's not on the page.
+* This [div] will need an [id] so that we can easily query for the element.
+* [HTML data attributes] can be arbitrarily named. That is, there's noting
+  preventing you from adding `data-asdnwenbtadsnsdf='foo'` to an element.
+  However, it would be hard to query for that. So you should likely just use
+  `data-directory` to make it easy.
+
+<details>
+  <summary>official solution - update to views/show_project.erb file.</summary>
 
 ```diff
          </div>
@@ -2059,18 +2081,33 @@ to none to make it invisible) with on data attribute for the directory.
 +<div class='d-none' id="project_config" data-directory="<%= @directory %>">
 +</div>
 ```
+</details>
+<br>
 
 Now in `public/app.js` we can query for this element and extract
-the directory we need to query.
+the directory so that we can then later list the files in that
+directory.
 
 First we use plain [javascript] APIs like [getElementById] to get
 the [HTML] element we're looking for.  Note that `app.js` is being
 loaded on every page. So if `configElement` is `null`, we should
 just exit because we're not on a project's page.
 
-Once we have the element we're looking for, we can directly
-get it's `directory`. We'll need this parameter because that is
-the file system location we'll be inspecting for new png images.
+Once we have the element we're looking for, we can use it's
+[dataset] to find the `directory`. We'll need this parameter
+because that is the file system location we'll be inspecting
+for new png images.
+
+Tips:
+* Use [getElementById] to find the element we're looking for.
+  (We're looking for the element we just created in this step).
+* Remember to check if this element is `null` which it will be
+  on the index page.
+* [HTML data attributes] are present in [javascript] objects
+  through the [dataset] property.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
  function updateCarousel() {
@@ -2085,6 +2122,8 @@ the file system location we'll be inspecting for new png images.
 +  console.log(`will be querying ${directory} for new images.`);
  }
 ```
+</details>
+<br>
 
 ### 7c. Fetch the directory data.
 
@@ -2105,6 +2144,20 @@ server's response.
 We can then call [fetch] and simply turn the data into [json]
 format. We'll then just log it to the console in this step.
 
+Tips:
+* The [URL] parameter is `/pun/sys/dashboard/files/fs/` +
+  the directory you're searching.
+* Be sure to use the `'Accept': 'application/json'` [HTTP Header]
+  to tell the server you want a `json` response.
+* Although the response is actually `json`, the initial response
+  from [fetch] will be a text string. Use the `json()` function
+  on the response to turn into actual `json` data.
+* [fetch] will return a [Promise] object. You can chain together many
+  instances of [then] after a [Promise] resolves. The data returned
+  in one [then] will be the input to the next [then].
+
+<details>
+  <summary>official solution - update to public/app.js file.</summary>
 
 ```diff
   console.log(`will be querying ${directory} for new images.`);
@@ -2121,6 +2174,8 @@ format. We'll then just log it to the console in this step.
 +    .then(data => console.log(data));
  }
 ```
+</details>
+<br>
 
 ### 7d. Mapping and filtering the json data
 
@@ -2130,10 +2185,18 @@ some translations and filtering before we can update the
 [DOM (Document Object Model)].
 
 We need to:
-  * extract the file metadata from the response.
-  * extract the name of the file from the file metadata.
-  * filter the list of names for only names that end with png
+* Extract the file property from the json response.
+* Extract the name property of the file from the file data.
+* Filter the list of names for only names that end with png.
 
+Tips:
+* Use your browsers console to inspect the json object.
+  (it should be printing to the console log).
+* Use the [map (js)] function to map data from one format to another.
+* Use the [filter] function to filter data.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
 
@@ -2150,6 +2213,8 @@ We need to:
 +    });
  }
 ```
+</details>
+<br>
 
 ### 7e. Determine if image needs to be added.
 
@@ -2439,4 +2504,10 @@ more to do. Here are a couple examples of things you can add to this application
 [Range]: https://docs.ruby-lang.org/en/master/Range.html
 [CSS Selector]: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors
 [span]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span
+[dataset]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset
+[HTTP Header]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+[map (js)]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+[then]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then
+[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[filter]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
 
