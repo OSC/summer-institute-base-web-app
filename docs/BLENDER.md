@@ -338,7 +338,7 @@ end
 
 <form action="<%= url("/projects/new") %>" method="post">
 
-  <div class="form-control">
+  <div class="form-group">
     <label for="name">Name</label>
     <input id="name" name="name" type="text" class="form-control" required/>
   </div>

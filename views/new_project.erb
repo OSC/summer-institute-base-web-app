@@ -1,0 +1,13 @@
+<div class="d-flex justify-content-center">
+  <h1 class="my-2">Create a new rendering project</h1>    
+</div>
+
+<form action="<%= url("/projects/new") %>" method="post">
+
+  <div class="form-control">
+    <label for="name">Name</label>
+    <input id="name" name="name" type="text" class="form-control" required='true' />
+  </div>
+
+  <button type="submit" class="btn btn-primary my-2">Submit</button>
+</form>
