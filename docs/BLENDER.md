@@ -2221,24 +2221,38 @@ Tips:
 Now that we've extracted all the file names that currently
 exist on the filesystem, we can almost begin to modify the
 [DOM (Document Object Model)]. Let's setup the scaffoling
-to do jsut that.
+to do just that.
 
-In our loop of all the images, we need to:
+We need to:
 
-* determine if the page already has that image
-* call updateCarousel again to continue searching for new files.
+* While looping through all the images - determine if the page
+  already has that image.
+* At the end of the loop call updateCarousel again to continue
+  searching for new files.
 
 In the loop of all files, we can generate the [HTML id] and use
-[getElementById] to query for the element.  If we find the element
+[getElementById] to query for the iamge.  If we find the image
 is already on the page (the query returned something that is not 
 `null`) we can just continue the loop.
 
 If we don't find the image already on the [DOM (Document Object Model)]
 we'll just log that we will be adding it.
 
+**Note that in step 6a you may not have provided a unique id to each image. The [div] that wraps images should have a unique [id] based off of the filename itself.**
+
 As the last step, we can use [setTimeout] to call the `updateCarousel`
-function all over again in 10,000 milliseconds (10 seconds) thereby
+function all over again in 30,000 milliseconds (30 seconds) thereby
 continuing our search for new images.
+
+Tips:
+* Use [setTimeout] to call `updateCarousel` again at some point in the future.
+* The [div] wrapping the [img] needs a unique [id]. If you didn't apply unique
+  [id]s in step 6a, you need to do so now.
+* You can use [getElementById] to find the [div] that holds the [img].
+  If this returns `null` the image does not yet exist on the page.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
      .then(files => files.filter(file => file.endsWith('png')))
@@ -2259,11 +2273,12 @@ continuing our search for new images.
 +
        }
 +
-+      setTimeout(updateCarousel, 10000);
++      setTimeout(updateCarousel, 30000);
      });
  }
 ```
-
+</details>
+<br>
 
 ### 7f. Create new image div.
 
@@ -2272,7 +2287,7 @@ the filesystem for new files, we need to edit the
 [DOM (Document Object Model)] to add the new file.
 
 Fist, we'll make the new [HTML] [div].  The [div]
-we're attempting to make looks like this. This should look
+we're attempting to make is given below. This should look
 familar from the `views/show_project.erb`.
 
 ```html
@@ -2288,6 +2303,17 @@ to add the `carousel-item` class to it.
 To add the [img] element as the inner child [HTML] to the parent
 [div] `newImage` we can use the [innerHTML] API and provide a string.
 
+Tips:
+* Use the [createElement] API do create new elements.
+* Use the [classList] property to add [CSS Class]es to the element.
+* Use [innerHTML] to define the inner HTML of the element.
+  * Note this can be a string and you can use [template literals] 
+  like `` `constant and ${variable}` `` to create strings.
+
+
+<details>
+  <summary>official solution - addition to public/app.js file</summary>
+
 ```diff
          console.log(`adding ${imageId} to the DOM.`);
  
@@ -2298,16 +2324,18 @@ To add the [img] element as the inner child [HTML] to the parent
 +
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
+</details>
+<br>
 
 ### 7g. Create new li indicator.
 
 Now we have the [javascript] creating a new [div] and [img]
 which is great.  However, the [Bootstrap carousel] has
-[li] indicators at the bottom for navigation.
+[list item (li)] indicators at the bottom for navigation.
 
-We can't add the image without the [li] indicator, so
+We can't add the image without the [list item (li)] indicator, so
 let's do that now.
 
 The [HTML] we're trying to build is similar to this (though the numbers
@@ -2321,7 +2349,10 @@ Again, we'll use the [createElement] API, but this time passing
 `li` as the argument.
 
 We can use the [setAttribute] API to add [HTML data attributes]
-to the [li].
+to the [list item (li)].
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
          newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${q}/${file}" >`;
@@ -2331,8 +2362,10 @@ to the [li].
 +        newIndicator.setAttribute('data-target', '#blend_image_carousel');
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
+</details>
+<br>
 
 We also need to set the `data-slide-to` [HTML data attributes] as
 well. To do this however, we need to find the current size of the
@@ -2345,6 +2378,9 @@ So we can use the handy [getElementById] to find it. When we call
 We can then call `length` on that array to find the number of children
 in the [ol].
 
+<details>
+  <summary>official solution - addition to public/app.js file</summary>
+
 ```diff
          newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${q}/${file}" >`;
  
@@ -2356,9 +2392,10 @@ in the [ol].
 +        newIndicator.setAttribute('data-slide-to', totalImages);
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
-
+</details>
+<br>
 
 ### 7h. Attach elements to the DOM.
 
@@ -2371,6 +2408,12 @@ we need to add the `active` [CSS Class] to the indicator
 and image.  We can check the `totalImages` to see if
 it's 0 or not. If it is, we'll apply the [CSS Class].
 
+Tips:
+* Use the [classList] property on the element to add the `active` class.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
+
 ```diff
          newIndicator.setAttribute('data-target', '#blend_image_carousel');
          newIndicator.setAttribute('data-slide-to', totalImages);
@@ -2381,8 +2424,9 @@ it's 0 or not. If it is, we'll apply the [CSS Class].
 +        }
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
+</details>
 
 With that edge case out of the way - we can now
 actually add the newly created elements to the [DOM (Document Object Model)].
@@ -2393,6 +2437,9 @@ are already a part of the [DOM (Document Object Model)].
 Note that we want to append the new image [div]s to the
 `blend_image_carousel_inner` element, so we have to query
 for it.
+
+Tips:
+* [append] will append the new element as a child of the existing element.
 
 ```diff
            newIndicator.classList.add('active');
@@ -2510,4 +2557,6 @@ more to do. Here are a couple examples of things you can add to this application
 [then]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then
 [Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 [filter]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
-
+[createElement]: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+[classList]: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+[template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
