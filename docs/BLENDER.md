@@ -31,7 +31,7 @@ server responds.
 ```ruby
   get '/' do
     logger.info('requsting the index')
-    @flash = { info: 'Welcome to Summer Institute!' }
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
     erb(:index)
   end
 ```
@@ -189,7 +189,7 @@ to do this.
   <summary>official solution - addition to app.rb.</summary>
 
 ```diff
-     @flash = { info: 'Welcome to Summer Institute!' }
+     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
      erb(:index)
    end
 +
@@ -261,7 +261,7 @@ what parameters have been sent to the web server.
   <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
-     @flash = { info: 'Welcome to Summer Institute!' }
+     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
      erb(:index)
    end
 +
@@ -308,7 +308,7 @@ class App < Sinatra::Base
 
   get '/' do
     logger.info('requsting the index')
-    @flash = { info: 'Welcome to Summer Institute!' }
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
     erb(:index)
   end
 
@@ -442,7 +442,7 @@ class App < Sinatra::Base
 
   get '/' do
     logger.info('requsting the index')
-    @flash = { info: 'Welcome to Summer Institute!' }
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
     erb(:index)
   end
 
