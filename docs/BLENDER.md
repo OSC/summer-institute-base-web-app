@@ -1669,7 +1669,7 @@ This works by:
 +    <div id="blend_image_carousel_inner" class="carousel-inner">
 +
 +      <%- @images.each_with_index do |image, index| -%>
-+      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
++      <div id="<%= File.basename(image) %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
 +        <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
 +      </div>
 +      <%- end -%>
@@ -1935,7 +1935,7 @@ end
     <div id="blend_image_carousel_inner" class="carousel-inner">
 
       <%- @images.each_with_index do |image, index| -%>
-      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
+      <div id="<%= File.basename(image) %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
         <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
       </div>
       <%- end -%>
@@ -2274,16 +2274,15 @@ Tips:
        for(const file of files) {
 -        console.log(file);
 +
-+        const imageId = `${file.replaceAll('.', '_')}`;
-+        const image = document.getElementById(imageId);
++        const image = document.getElementById(file);
 +
 +        // image is already on the DOM so just return.
 +        if(image != null) {
-+          console.log(`skipping ${imageId} because it's already on the DOM.`);
++          console.log(`skipping ${file} because it's already on the DOM.`);
 +          continue;
 +        }
 +
-+        console.log(`adding ${imageId} to the DOM.`);
++        console.log(`adding ${file} to the DOM.`);
 +
        }
 +
