@@ -936,7 +936,7 @@ Tips:
 +
 +      <div class="form-group col-md-4">
 +        <label for="frame_range">Frame Range (N-M)</label>
-+        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
++        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
 +        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
 +      </div>
 +
@@ -994,7 +994,7 @@ Tips:
 
       <div class="form-group col-md-4">
         <label for="frame_range">Frame Range (N-M)</label>
-        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
         <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
       </div>
 
@@ -1339,7 +1339,7 @@ end
 
       <div class="form-group col-md-4">
         <label for="frame_range">Frame Range (N-M)</label>
-        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
         <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
       </div>
 
