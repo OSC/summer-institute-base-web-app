@@ -947,7 +947,7 @@ Tips:
 +      </div>
 +
 +      <div>
-+        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
++        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
 +      </div>
 +
 +    </div> <!-- end class="row" -->
@@ -1005,7 +1005,7 @@ Tips:
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -1350,7 +1350,7 @@ end
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -1894,7 +1894,7 @@ end
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
