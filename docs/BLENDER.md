@@ -697,7 +697,7 @@ list alphabetically is just a nice thing to do.
 Now we can use the helper method `project_dirs` to loop through each
 project directory and create an [unordered list (ul)] with a [list item (li)]
 for each project directory and create an [anchor (a)] link so users
-can navigate to the `/projects/:directory` route for each project.
+can navigate to the `/projects/:name` route for each project.
 
 Additionally, within the [anchor (a)] we can use [idiomatic text (i)] tags
 for icons to make it look nice and a [paragraph (p)] tag to display
@@ -1590,8 +1590,8 @@ end
 Now that we can submit jobs, step 6 adds an image carousel to the `get '/projects/:name'`
 page so that users can see the output of the render job.
 
-We're going to use the [Bootstrap carousel] library to show the images on the page
-in a visually pleasing way.
+The official solution uses the [Bootstrap carousel] library to show the
+images on the page in a visually pleasing way.
 
 To complete this step we need to:
   * Find all the images on the backend server and assign the [Array]
@@ -1604,7 +1604,7 @@ that end with `.png` extension and assign this [Array] to an [instance variable]
 we call `@images`.
 
 <details>
-  <summary>official solution - addition to app.rb file.</summary>
+  <summary>official solution - addition to app.rb file</summary>
 
 ```diff
        @directory = Pathname.new("#{projects_root}/#{params[:name]}")
@@ -1618,45 +1618,45 @@ we call `@images`.
 </details>
 <br>
 
-The [HTML] to show the images is far more complicated. The outer most
-[div] has the [CSS Class]es `carousel slide` which is a part of the
-[Bootstrap carousel] library to get the carousel working. Lastly need
-a [div] with the [CSS CLass] `carousel-inner`. This is where all our
-images will go.
+The [HTML] to show the images is far more complicated.
+Looking at the [Bootstrap carousel] documentation we need to
+create some outer [div]s around our [img]s so that [Bootstrap]
+knows where to apply the changes.
 
-Then, with those outer [div]s in place - we can loop through [each] of
-the images to create a [div] with the classes `carousel-item active`
-which holds an [img] that is our image, though `active` will only be
-applied to the very first image.
-
-This is the basic structure that we need:
+This is the basic structure of elements with [CSS Class]es
+that we'll need to get this on the page.
 
 ```
 div[class="carousel slide" data-ride="carousel"]
-  div[class="carousel inner"]
+  div[class="carousel-inner]
 
-    <!-- loop over each image begin -->
-    div[class="carousel-item"] (the first image will also have class 'active')
+    <!-- loop start -->
+    div[class="carousel-item"] (the first image will also have the 'active' class)
       img
-    <!-- loop end >
+    <!-- loop end -->
 ```
 
-Tips:
-* Be sure to give each [div] a unqiue [id]. This applies to the image [div]s
-  too.
-  * The filename can serve as a unique [id]. You can use the [File] class
-    to get the basename because it is currently the full path to the image,
-    not just the filename.
-* [img] tags need a [src] attribute to know where the image comes from.
-  We can use OnDemand's files API to pull images. The base url is
-  `/pun/sys/dashboard/files/fs`. This URL + the image's full path
-  can be the [src] of the image.
-* Use [each_with_index] to get the index number too to determine when
-  to apply the `active` [CSS Class].
+This works by:
+* Applying the [HTML data attributes] `data-ride="carousel"`
+  to the outer most `div`.
+* Applying the [CSS Classs]es `carousel` and `slide` to the
+  outer most div.
+* Applying the [CSS Classs] `carousel-inner` to the inner
+  [div].
+* Looping through all the `@images` to create a [div] that
+  has the [CSS CLass] `carousel-item`.  This [div] will have
+  a child [img] element that is the actual image.
+  * The very first image will additionally have the [CSS CLass]
+    `active`. Instead of [each] you can use [each_with_index]
+    to supply the index of the [Array] and apply the `active`
+    class when the index is zero.
+  * The `@images` is an [Array] of full paths to the file.
+    You can use `/pun/sys/dashboard/files/fs<%= image %>` as
+    the [src] attribute for the [img].
 
-<br>
+
 <details>
-  <summary>official solution - addition to views/show_project.erb</summary>
+  <summary>official solution - addition to views/show_project.erb file</summary>
 
 ```diff
  <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
@@ -1692,8 +1692,44 @@ That's all well and good, but should still enable a way for users to navigate
 through all the images. 
 
 First, we'll add an [unordered list (ul)] with [list item (li)]s to be our carousel
-indicators.  We'll add this [unordered list (ul)] as a child to `blend_image_carousel`
-and a sibling to `blend_image_carousel_inner`.
+indicators. Carousel indicators are the items at the bottom of the carousel
+that users can click on to navigate to specific images.
+
+We'll add this [unordered list (ul)] as a sibling to the [div] with the [CSS Class] `carousel-inner`.
+
+```
+ol[class="carousel-indicators"]
+  <!-- loop start -->
+  li
+  <!-- loop end -->
+```
+
+This works by:
+* Applying the [CSS Class] `carousel-indicators` to the [unordered list (ul)]
+* Each [list item (li)] needs:
+  * A `data-target` [HTML data attributes]. This is a [CSS Selector] that should
+    just be a query for the `id` of `id` of the outer most [div] with the `data-ride="carousel"`.
+    A [CSS Selector] for an `id` is just `#` and the `id` for example `#my_div_id` when
+    `my_div_id` is the `id` of the [div] you're looking for.
+    **Note you may have to add an id to the outer most [div] if you haven't already**.
+  * A `data-slide-to` [HTML data attributes] that is the image number that indicator
+    will slide to. **Note that `data-slide-to` numbers are expected to start at 0.**
+  * The very first [list item (li)] will need the [CSS Class] `active`.
+
+Tips:
+* The [list item (li)]s all need a number to know where to slide to.
+  * The `@images` [instance variable] is an [Array] so you can call
+    `length` on that array to find the length of the [Array].
+  * You can use the [Range] class to create another [Array] that is
+    all the numbers 1 through `@images.length`.
+  * Or you can use [each_with_index] on `@images` and just disregard
+    the image variable, using only the index variable.
+* Note that the [Bootstrap carousel] library expects the `data-slide-to`
+  [HTML data attributes] to start at 0. So if you have 2 images, the
+  `data-slide-to` attributes would be `0` and `1` not `1` and `2`.
+
+<details>
+  <summary>official solution - addition to views/show_project.erb</summary>
 
 So if we take the structure from step 6a and add this, it becomes:
 
@@ -1735,15 +1771,35 @@ Tips:
 <br>
 
 Now you should have indicators at the bottom of the images. There should be
-one for each image so that users can navigate directly to any given image.
+one for each image. They should be clickable and correctly 
 
 ### 6c. Add carousel previous & next buttons. 
 
 Now that we have carousel indicators, we also want to add buttons to
 navigate to the previous and next images.
 
-We'll use [anchor (a)]s for this. Again, they'll be a child of `blend_image_carousel`
-and a sibling to `blend_image_carousel_inner`.
+We'll use [anchor (a)]s that are siblings to the [div] with the
+[CSS Class] `carousel-inner`.
+
+These [anchor (a)]s will have two children, both of them [span]s.
+The first [span] will be the actual clickable icon. The second
+is for Accessibility of screen readers to indicate what this button
+does (because there's no visual text for what the button does).
+
+Tips:
+* This is the structure with [CSS Class]es. Note that this example is
+  for the previous button. The next button would use `carousel-control-next`
+  and `carousel-control-next-icon` [CSS Class]es.
+
+```
+a[class="carousel-control-prev" role="button" href="#blend_image_carousel" data-slide="prev"]
+  span[class="carousel-control-prev-icon" aria-hidden="true"]
+  span[class="sr-only"]
+    Previous
+```
+
+<details>
+  <summary>official solution - addition to views/show_project.erb file.</summary>
 
 ```diff
      </div> <!-- carousel inner -->
@@ -1760,9 +1816,12 @@ and a sibling to `blend_image_carousel_inner`.
 +
    </div><!-- carousel -->
 ```
+</details>
+
+<br>
 
 <details>
-  <summary>official solution - full app.rb file</summary>
+  <summary>official solution - full app.rb file.</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -1869,7 +1928,7 @@ end
 <br>
 
 <details>
-  <summary>official solution - full views/show_project.erb file</summary>
+  <summary>official solution - full views/show_project.erb file.</summary>
 
 ```erb
 <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
@@ -1983,14 +2042,23 @@ We're using the [jquery] [javascript] framework for convenience.
 
 ### 7a. Start editing app.js
 
-There's already a [javascript] file that's being loaded on every page.
-The file is `public/app.js`. Let's give it just a quick edit so that
-when the page loads it'll 
+The [javascript] file `public/app.js` is already loaded on every page.
+We're going to add to this file in this step.
 
 `jQuery` is a function that will run when the [window page load event]
 is fired. I.e., when the page is loaded.
 
-`public/app.js`
+Let's change this slightly by:
+* Adding a new function called `updateCarousel` that takes no arguments.
+* This new function `updateCarousel` should do something simple like logging
+  some simple message through `console.log`.
+* The block provided to the `jQuery` function should call this new function
+  `updateCarousel`.
+
+**Note that you may have to hard refresh the page (ctrl + shift + r) to download the new app.js file.**
+
+<details>
+  <summary>official solution - update to public/app.js file.</summary>
 
 ```diff
  jQuery(() => {
@@ -1999,9 +2067,11 @@ is fired. I.e., when the page is loaded.
  });
 +
 +function updateCarousel() {
-+  console.log('hello world');
++  console.log('hello world from the updateCarousel function.');
 +}
 ```
+</details>
+<br>
 
 ### 7b. Pass directory to javascript.
 
@@ -2012,10 +2082,21 @@ First we need a way to pass the project's directory to
 the [javascript] running on the client's browser.  We can do this
 through [HTML data attributes].
 
-Let's add a hidden [div] (class `d-none` sets the display attribute
-to none to make it invisible) with on data attribute for the directory.
+Let's add a hidden [div] with on data attribute for the directory.
+The [CSS Class] `d-none` sets the display attribute to none to make
+it invisible.
 
-`views/show_project.erb`
+Tips:
+* A [div] with no text will not be visible on the page. However
+  adding the [CSS Class] `d-none` will ensure that it's not on the page.
+* This [div] will need an [id] so that we can easily query for the element.
+* [HTML data attributes] can be arbitrarily named. That is, there's noting
+  preventing you from adding `data-asdnwenbtadsnsdf='foo'` to an element.
+  However, it would be hard to query for that. So you should likely just use
+  `data-directory` to make it easy.
+
+<details>
+  <summary>official solution - update to views/show_project.erb file.</summary>
 
 ```diff
          </div>
@@ -2025,18 +2106,33 @@ to none to make it invisible) with on data attribute for the directory.
 +<div class='d-none' id="project_config" data-directory="<%= @directory %>">
 +</div>
 ```
+</details>
+<br>
 
 Now in `public/app.js` we can query for this element and extract
-the directory we need to query.
+the directory so that we can then later list the files in that
+directory.
 
 First we use plain [javascript] APIs like [getElementById] to get
 the [HTML] element we're looking for.  Note that `app.js` is being
 loaded on every page. So if `configElement` is `null`, we should
 just exit because we're not on a project's page.
 
-Once we have the element we're looking for, we can directly
-get it's `directory`. We'll need this parameter because that is
-the file system location we'll be inspecting for new png images.
+Once we have the element we're looking for, we can use it's
+[dataset] to find the `directory`. We'll need this parameter
+because that is the file system location we'll be inspecting
+for new png images.
+
+Tips:
+* Use [getElementById] to find the element we're looking for.
+  (We're looking for the element we just created in this step).
+* Remember to check if this element is `null` which it will be
+  on the index page.
+* [HTML data attributes] are present in [javascript] objects
+  through the [dataset] property.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
  function updateCarousel() {
@@ -2051,6 +2147,8 @@ the file system location we'll be inspecting for new png images.
 +  console.log(`will be querying ${directory} for new images.`);
  }
 ```
+</details>
+<br>
 
 ### 7c. Fetch the directory data.
 
@@ -2071,6 +2169,20 @@ server's response.
 We can then call [fetch] and simply turn the data into [json]
 format. We'll then just log it to the console in this step.
 
+Tips:
+* The [URL] parameter is `/pun/sys/dashboard/files/fs/` +
+  the directory you're searching.
+* Be sure to use the `'Accept': 'application/json'` [HTTP Header]
+  to tell the server you want a `json` response.
+* Although the response is actually `json`, the initial response
+  from [fetch] will be a text string. Use the `json()` function
+  on the response to turn into actual `json` data.
+* [fetch] will return a [Promise] object. You can chain together many
+  instances of [then] after a [Promise] resolves. The data returned
+  in one [then] will be the input to the next [then].
+
+<details>
+  <summary>official solution - update to public/app.js file.</summary>
 
 ```diff
   console.log(`will be querying ${directory} for new images.`);
@@ -2087,6 +2199,8 @@ format. We'll then just log it to the console in this step.
 +    .then(data => console.log(data));
  }
 ```
+</details>
+<br>
 
 ### 7d. Mapping and filtering the json data
 
@@ -2096,10 +2210,18 @@ some translations and filtering before we can update the
 [DOM (Document Object Model)].
 
 We need to:
-  * extract the file metadata from the response.
-  * extract the name of the file from the file metadata.
-  * filter the list of names for only names that end with png
+* Extract the file property from the json response.
+* Extract the name property of the file from the file data.
+* Filter the list of names for only names that end with png.
 
+Tips:
+* Use your browsers console to inspect the json object.
+  (it should be printing to the console log).
+* Use the [map (js)] function to map data from one format to another.
+* Use the [filter] function to filter data.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
 
@@ -2116,6 +2238,8 @@ We need to:
 +    });
  }
 ```
+</details>
+<br>
 
 ### 7e. Determine if image needs to be added.
 
@@ -2124,22 +2248,36 @@ exist on the filesystem, we can almost begin to modify the
 [DOM (Document Object Model)]. Let's setup the scaffoling
 to do just that.
 
-In our loop of all the images, we need to:
+We need to:
 
-* determine if the page already has that image
-* call updateCarousel again to continue searching for new files.
+* While looping through all the images - determine if the page
+  already has that image.
+* At the end of the loop call updateCarousel again to continue
+  searching for new files.
 
 In the loop of all files, we can generate the [HTML id] and use
-[getElementById] to query for the element.  If we find the element
+[getElementById] to query for the iamge.  If we find the image
 is already on the page (the query returned something that is not 
 `null`) we can just continue the loop.
 
 If we don't find the image already on the [DOM (Document Object Model)]
 we'll just log that we will be adding it.
 
+**Note that in step 6a you may not have provided a unique id to each image. The [div] that wraps images should have a unique [id] based off of the filename itself.**
+
 As the last step, we can use [setTimeout] to call the `updateCarousel`
-function all over again in 10,000 milliseconds (10 seconds) thereby
+function all over again in 30,000 milliseconds (30 seconds) thereby
 continuing our search for new images.
+
+Tips:
+* Use [setTimeout] to call `updateCarousel` again at some point in the future.
+* The [div] wrapping the [img] needs a unique [id]. If you didn't apply unique
+  [id]s in step 6a, you need to do so now.
+* You can use [getElementById] to find the [div] that holds the [img].
+  If this returns `null` the image does not yet exist on the page.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
      .then(files => files.filter(file => file.endsWith('png')))
@@ -2160,11 +2298,12 @@ continuing our search for new images.
 +
        }
 +
-+      setTimeout(updateCarousel, 10000);
++      setTimeout(updateCarousel, 30000);
      });
  }
 ```
-
+</details>
+<br>
 
 ### 7f. Create new image div.
 
@@ -2173,7 +2312,7 @@ the filesystem for new files, we need to edit the
 [DOM (Document Object Model)] to add the new file.
 
 Fist, we'll make the new [HTML] [div].  The [div]
-we're attempting to make looks like this. This should look
+we're attempting to make is given below. This should look
 familar from the `views/show_project.erb`.
 
 ```html
@@ -2189,6 +2328,17 @@ to add the `carousel-item` class to it.
 To add the [img] element as the inner child [HTML] to the parent
 [div] `newImage` we can use the [innerHTML] API and provide a string.
 
+Tips:
+* Use the [createElement] API do create new elements.
+* Use the [classList] property to add [CSS Class]es to the element.
+* Use [innerHTML] to define the inner HTML of the element.
+  * Note this can be a string and you can use [template literals] 
+  like `` `constant and ${variable}` `` to create strings.
+
+
+<details>
+  <summary>official solution - addition to public/app.js file</summary>
+
 ```diff
          console.log(`adding ${imageId} to the DOM.`);
  
@@ -2199,16 +2349,18 @@ To add the [img] element as the inner child [HTML] to the parent
 +
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
+</details>
+<br>
 
 ### 7g. Create new li indicator.
 
 Now we have the [javascript] creating a new [div] and [img]
 which is great.  However, the [Bootstrap carousel] has
-[li] indicators at the bottom for navigation.
+[list item (li)] indicators at the bottom for navigation.
 
-We can't add the image without the [li] indicator, so
+We can't add the image without the [list item (li)] indicator, so
 let's do that now.
 
 The [HTML] we're trying to build is similar to this (though the numbers
@@ -2222,7 +2374,10 @@ Again, we'll use the [createElement] API, but this time passing
 `li` as the argument.
 
 We can use the [setAttribute] API to add [HTML data attributes]
-to the [li].
+to the [list item (li)].
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
 
 ```diff
          newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${q}/${file}" >`;
@@ -2232,8 +2387,10 @@ to the [li].
 +        newIndicator.setAttribute('data-target', '#blend_image_carousel');
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
+</details>
+<br>
 
 We also need to set the `data-slide-to` [HTML data attributes] as
 well. To do this however, we need to find the current size of the
@@ -2246,6 +2403,9 @@ So we can use the handy [getElementById] to find it. When we call
 We can then call `length` on that array to find the number of children
 in the [ol].
 
+<details>
+  <summary>official solution - addition to public/app.js file</summary>
+
 ```diff
          newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${q}/${file}" >`;
  
@@ -2257,9 +2417,10 @@ in the [ol].
 +        newIndicator.setAttribute('data-slide-to', totalImages);
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
-
+</details>
+<br>
 
 ### 7h. Attach elements to the DOM.
 
@@ -2272,6 +2433,12 @@ we need to add the `active` [CSS Class] to the indicator
 and image.  We can check the `totalImages` to see if
 it's 0 or not. If it is, we'll apply the [CSS Class].
 
+Tips:
+* Use the [classList] property on the element to add the `active` class.
+
+<details>
+  <summary>official solution - addition to public/app.js file.</summary>
+
 ```diff
          newIndicator.setAttribute('data-target', '#blend_image_carousel');
          newIndicator.setAttribute('data-slide-to', totalImages);
@@ -2282,8 +2449,9 @@ it's 0 or not. If it is, we'll apply the [CSS Class].
 +        }
        }
  
-       setTimeout(updateCarousel, 10000);
+       setTimeout(updateCarousel, 30000);
 ```
+</details>
 
 With that edge case out of the way - we can now
 actually add the newly created elements to the [DOM (Document Object Model)].
@@ -2294,6 +2462,9 @@ are already a part of the [DOM (Document Object Model)].
 Note that we want to append the new image [div]s to the
 `blend_image_carousel_inner` element, so we have to query
 for it.
+
+Tips:
+* [append] will append the new element as a child of the existing element.
 
 ```diff
            newIndicator.classList.add('active');
@@ -2402,4 +2573,16 @@ more to do. Here are a couple examples of things you can add to this application
 [File]: https://docs.ruby-lang.org/en/master/File.html
 [format]: https://docs.ruby-lang.org/en/master/format_specifications_rdoc.html
 [src]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/src
+[Bootstrap]: https://getbootstrap.com/docs/4.0/getting-started/introduction/
 [Range]: https://docs.ruby-lang.org/en/master/Range.html
+[CSS Selector]: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors
+[span]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/span
+[dataset]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/dataset
+[HTTP Header]: https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers
+[map (js)]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/map
+[then]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then
+[Promise]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
+[filter]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter
+[createElement]: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
+[classList]: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
+[template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals

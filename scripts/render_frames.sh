@@ -10,7 +10,7 @@ function frame_range() {
 }
 
 # Use LMod to load Blender into our PATH
-module load blender/3.6.3
+module load blender/4.2
 
 # Change directory to where our .blend file is
 cd "$OUTPUT_DIR"
