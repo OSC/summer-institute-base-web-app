@@ -118,6 +118,8 @@ ul (already exists)
     <title><%= title %></title>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+    <script src="<%= url("/app.js") %>" type="text/javascript"></script>
+    <link rel="icon" type="image/png" href="<%= url("/favicon.ico") %>"/>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 
@@ -2573,3 +2575,4 @@ more to do. Here are a couple examples of things you can add to this application
 [createElement]: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
 [classList]: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
 [template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
+[append]: https://developer.mozilla.org/en-US/docs/Web/API/Element/append
