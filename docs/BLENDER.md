@@ -1697,11 +1697,21 @@ that users can click on to navigate to specific images.
 
 We'll add this [unordered list (ul)] as a sibling to the [div] with the [CSS Class] `carousel-inner`.
 
+So if we take the structure from step 6a and add this, it becomes:
+
 ```
-ol[class="carousel-indicators"]
-  <!-- loop start -->
-  li
-  <!-- loop end -->
+div[class="carousel slide" data-ride="carousel"]
+  div[class="carousel inner"]
+
+    <!-- loop over each image begin -->
+    div[class="carousel-item"] (the first image will also have class 'active')
+      img
+    <!-- loop end >
+
+    ol[class="carousel-indicators"]
+    <!-- loop over each image number begin -->
+      li[data-slide-to="the image number"] (the first indicator will have the class 'active')
+    <!-- loop end >
 ```
 
 This works by:
@@ -1728,31 +1738,8 @@ Tips:
   [HTML data attributes] to start at 0. So if you have 2 images, the
   `data-slide-to` attributes would be `0` and `1` not `1` and `2`.
 
-<details>
-  <summary>official solution - addition to views/show_project.erb</summary>
-
-So if we take the structure from step 6a and add this, it becomes:
-
-```
-div[class="carousel slide" data-ride="carousel"]
-  div[class="carousel inner"]
-
-    <!-- loop over each image begin -->
-    div[class="carousel-item"] (the first image will also have class 'active')
-      img
-    <!-- loop end >
-
-    ol[class="carousel-indicators"]
-    <!-- loop over each image number begin -->
-      li[data-slide-to="the image number"] (the first indicator will have the class 'active')
-    <!-- loop end >
-```
-
-Tips:
-* This loop does not need the image itself, but rather the image
-  number.
-
 <br>
+
 <details>
   <summary>official solution - update to views/show_project.erb file.</summary>
 
