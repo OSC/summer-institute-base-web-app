@@ -1593,8 +1593,9 @@ page so that users can see the output of the render job.
 We're going to use the [Bootstrap carousel] library to show the images on the page
 in a visually pleasing way.
 
-To complete this step we need to 
-  * Find all the images on the backend server
+To complete this step we need to:
+  * Find all the images on the backend server and assign the [Array]
+    to and [instance variable].
   * Use the [Bootstrap carousel] library to display all the images.
 
 Finding the images is as easy as using the [Dir] module to glob (use wildcards)
@@ -1602,7 +1603,8 @@ the directory where they should be. This will find all the files in the director
 that end with `.png` extension and assign this [Array] to an [instance variable]
 we call `@images`.
 
-`app.rb`
+<details>
+  <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
        @directory = Pathname.new("#{projects_root}/#{params[:name]}")
@@ -1613,19 +1615,48 @@ we call `@images`.
        if(@directory.directory? && @directory.readable?)
          erb(:show_project)
 ```
+</details>
+<br>
 
-The [HTML] to show the images is far more complicated. Let's start simple
-by creating an outer [div] with the `row my-3` [CSS Class]es just to give
-us some spacing. The next [div] has the [CSS Class]es `carousel slide` 
-which is a part of the [Bootstrap carousel] library to get the carousel
-working. Lastly need a [div] with the [CSS CLass] `carousel-inner`. This
-is where all our images will go.
+The [HTML] to show the images is far more complicated. The outer most
+[div] has the [CSS Class]es `carousel slide` which is a part of the
+[Bootstrap carousel] library to get the carousel working. Lastly need
+a [div] with the [CSS CLass] `carousel-inner`. This is where all our
+images will go.
 
 Then, with those outer [div]s in place - we can loop through [each] of
 the images to create a [div] with the classes `carousel-item active`
-which holds an [img] that is our image.
+which holds an [img] that is our image, though `active` will only be
+applied to the very first image.
 
-`views/show_project.erb`
+This is the basic structure that we need:
+
+```
+div[class="carousel slide" data-ride="carousel"]
+  div[class="carousel inner"]
+
+    <!-- loop over each image begin -->
+    div[class="carousel-item"] (the first image will also have class 'active')
+      img
+    <!-- loop end >
+```
+
+Tips:
+* Be sure to give each [div] a unqiue [id]. This applies to the image [div]s
+  too.
+  * The filename can serve as a unique [id]. You can use the [File] class
+    to get the basename because it is currently the full path to the image,
+    not just the filename.
+* [img] tags need a [src] attribute to know where the image comes from.
+  We can use OnDemand's files API to pull images. The base url is
+  `/pun/sys/dashboard/files/fs`. This URL + the image's full path
+  can be the [src] of the image.
+* Use [each_with_index] to get the index number too to determine when
+  to apply the `active` [CSS Class].
+
+<br>
+<details>
+  <summary>official solution - addition to views/show_project.erb</summary>
 
 ```diff
  <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
@@ -1649,6 +1680,8 @@ which holds an [img] that is our image.
 +
  <h2>Render Frames</h2>
 ```
+</details>
+<br>
 
 ### 6b. Add carousel indicators.
 
@@ -2341,4 +2374,5 @@ more to do. Here are a couple examples of things you can add to this application
 [map]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-map
 [File]: https://docs.ruby-lang.org/en/master/File.html
 [format]: https://docs.ruby-lang.org/en/master/format_specifications_rdoc.html
+[src]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/src
 
