@@ -930,7 +930,7 @@ Tips:
 +
 +      <div class="form-group col-md-4">
 +        <label for="num_cpus">CPUs</label>
-+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
++        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='1' required>
 +        <small class="form-text text-muted">More CPUs means less time rendering.</small>
 +      </div>
 +
@@ -988,7 +988,7 @@ Tips:
 
       <div class="form-group col-md-4">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='1' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
@@ -1333,7 +1333,7 @@ end
 
       <div class="form-group col-md-4">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='1' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
@@ -1877,7 +1877,7 @@ end
 
       <div class="form-group col-md-4">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='1' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
