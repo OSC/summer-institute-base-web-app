@@ -361,13 +361,13 @@ actually create the project in the `post '/projects/new'` method
 [form] through a [POST] request).
 
 Once users create a project, we then need a route to show the project.
-This will be `projects#show` route that we'll also use to create new
+This will be `get '/projects/:name'` route that we'll also use to create new
 projects.
 
 **Note that `/projects/new` changes to `/projects/:name` with `:name` being a variable.**
 **There's also a special case when `:name` is `new`**.
 
-### 2a. Implement projects#new route.
+### 2a. Implement new projects.
 
 Given users input the project `name` - we need to:
 
@@ -482,12 +482,12 @@ temp_variable = "#{projects_root}/#{dir}"
 FileUtils.mkdir_p(temp_variable)
 ```
 
-Now when you submit the [form] in the `projects#new` page - you'll find
+Now when you submit the [form] in the ` get '/projects/:name'` page - you'll find
 that the directory `./projects/<user input>` has been created. However,
 the application doesn't know how to respond to the `/projects/<user input>` route yet.
 We'll create this functionality in the next step.
 
-### 2b. Creating a projects#show page.
+### 2b. Creating a page for showing projects.
 
 Now that [POST] requests to `/projects/new` modify the system
 to create a project, we need the functionality to actually show that
@@ -1587,7 +1587,7 @@ end
 
 ### 6a. Start the image carousel.
 
-Now that we can submit jobs, step 6 adds an image carousel to the `projects#show`
+Now that we can submit jobs, step 6 adds an image carousel to the `get '/projects/:name'`
 page so that users can see the output of the render job.
 
 We're going to use the [Bootstrap carousel] library to show the images on the page
@@ -1685,7 +1685,7 @@ Tips:
 
 ### 6b. Add carousel indicators.
 
-With the carousel created, you should see the images in the `projects#show`
+With the carousel created, you should see the images in the `get '/projects/:name'`
 routes. The bootstrap [javascript] should be iterating through these images.
 
 That's all well and good, but should still enable a way for users to navigate
@@ -1694,6 +1694,31 @@ through all the images.
 First, we'll add an [unordered list (ul)] with [list item (li)]s to be our carousel
 indicators.  We'll add this [unordered list (ul)] as a child to `blend_image_carousel`
 and a sibling to `blend_image_carousel_inner`.
+
+So if we take the structure from step 6a and add this, it becomes:
+
+```
+div[class="carousel slide" data-ride="carousel"]
+  div[class="carousel inner"]
+
+    <!-- loop over each image begin -->
+    div[class="carousel-item"] (the first image will also have class 'active')
+      img
+    <!-- loop end >
+
+    ol[class="carousel-indicators"]
+    <!-- loop over each image number begin -->
+      li[data-slide-to="the image number"] (the first indicator will have the class 'active')
+    <!-- loop end >
+```
+
+Tips:
+* This loop does not need the image itself, but rather the image
+  number.
+
+<br>
+<details>
+  <summary>official solution - update to views/show_project.erb file.</summary>
 
 ```diff
    <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
@@ -1706,6 +1731,8 @@ and a sibling to `blend_image_carousel_inner`.
 +
      <div id="blend_image_carousel_inner" class="carousel-inner">
 ```
+</details>
+<br>
 
 Now you should have indicators at the bottom of the images. There should be
 one for each image so that users can navigate directly to any given image.
@@ -2095,7 +2122,7 @@ We need to:
 Now that we've extracted all the file names that currently
 exist on the filesystem, we can almost begin to modify the
 [DOM (Document Object Model)]. Let's setup the scaffoling
-to do jsut that.
+to do just that.
 
 In our loop of all the images, we need to:
 
@@ -2305,7 +2332,7 @@ more to do. Here are a couple examples of things you can add to this application
       machine, get the program to render `1..50` on one machine and `51..100` on
       the other.  The environment variable `SLURM_ARRAY_TASK_ID` will be a different
       number for each machine you've requested.
-* Add the ability to change the project icon. Right now, every project icon in `projects#index`
+* Add the ability to change the project icon. Right now, every project icon in the index page
   is a camera (it's an icon - `i` - tag with `fas fa-fw fa-camera fa-5x` CSS classes).
   Make this configurable so that when you create a new project, you get to choose the icon.
     * Hint: google fontawesome for the entire list of icons you can use.
@@ -2375,4 +2402,4 @@ more to do. Here are a couple examples of things you can add to this application
 [File]: https://docs.ruby-lang.org/en/master/File.html
 [format]: https://docs.ruby-lang.org/en/master/format_specifications_rdoc.html
 [src]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/src
-
+[Range]: https://docs.ruby-lang.org/en/master/Range.html
