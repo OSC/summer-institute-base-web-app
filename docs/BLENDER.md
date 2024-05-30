@@ -905,7 +905,7 @@ Tips:
 
 
 <details>
-  <summary>official solution - addition to views/project_show.erb file.</summary>
+  <summary>official solution - addition to views/show_project.erb file.</summary>
 
 ```diff
 -Showing project at <%= @directory %>
@@ -964,7 +964,7 @@ Tips:
 <br>
 
 <details>
-  <summary>official solution - full views/project_show.erb file.</summary>
+  <summary>official solution - full views/show_project.erb file.</summary>
 
 ```html
 <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
