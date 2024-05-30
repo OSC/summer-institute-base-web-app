@@ -416,7 +416,7 @@ Tips:
 <br>
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -1702,7 +1702,7 @@ and a sibling to `blend_image_carousel_inner`.
 ```
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -1809,7 +1809,7 @@ end
 <br>
 
 <details>
-  <summary>full views/show_project.erb file</summary>
+  <summary>official solution - full views/show_project.erb file</summary>
 
 ```erb
 <h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
