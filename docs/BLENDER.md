@@ -2331,7 +2331,7 @@ Tips:
          console.log(`adding ${imageId} to the DOM.`);
  
 +        newImage = document.createElement('div');
-+        newImage.id = imageId;
++        newImage.id = file;
 +        newImage.classList.add('carousel-item');
 +        newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${directory}/${file}" >`;
 +
@@ -2464,6 +2464,42 @@ Tips:
 +        indicatorList.append(newIndicator);
        }
 ```
+
+### 7i. Edge case for first image.
+
+There is an edge case we have to account for and it's this:
+What happens when the page loads without any images and the [javascript]
+is adding the very first image?
+
+The answer is: nothing. This is becuase we need to apply the `active`
+[CSS Class] to the image if it's the very first image.
+
+Tips:
+* We have the variable `totalImages` which is the number of total
+  images. If it is `0` - then this is the first image and we need to
+  apply the [CSS Class] `active`.
+* `active` needs to be applied to both the [div] that holds the image
+  _and_ the [list item (li)] that is the indicator.
+* You can use the [classList] property to add the `active` class to
+  these elements.
+
+<details>
+  <summary>official solution - addition to the public/app.js file.</summary>
+
+```diff
+         const carousel = document.getElementById('blend_image_carousel_inner');
+ 
++        if(totalImages == 0){
++          newImage.classList.add('active');
++          newIndicator.classList.add('active');
++        }
++
+         carousel.append(newImage);
+         indicatorList.append(newIndicator);
+       }
+```
+</details>
+<br>
 
 ## 8. Render a video.
 
