@@ -31,7 +31,7 @@ server responds.
 ```ruby
   get '/' do
     logger.info('requsting the index')
-    @flash = { info: 'Welcome to Summer Institute!' }
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
     erb(:index)
   end
 ```
@@ -118,6 +118,8 @@ ul (already exists)
     <title><%= title %></title>
     <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+    <script src="<%= url("/app.js") %>" type="text/javascript"></script>
+    <link rel="icon" type="image/png" href="<%= url("/favicon.ico") %>"/>
 
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
 
@@ -189,7 +191,7 @@ to do this.
   <summary>official solution - addition to app.rb.</summary>
 
 ```diff
-     @flash = { info: 'Welcome to Summer Institute!' }
+     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
      erb(:index)
    end
 +
@@ -261,7 +263,7 @@ what parameters have been sent to the web server.
   <summary>official solution - addition to app.rb file.</summary>
 
 ```diff
-     @flash = { info: 'Welcome to Summer Institute!' }
+     @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
      erb(:index)
    end
 +
@@ -308,7 +310,7 @@ class App < Sinatra::Base
 
   get '/' do
     logger.info('requsting the index')
-    @flash = { info: 'Welcome to Summer Institute!' }
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
     erb(:index)
   end
 
@@ -338,7 +340,7 @@ end
 
 <form action="<%= url("/projects/new") %>" method="post">
 
-  <div class="form-control">
+  <div class="form-group">
     <label for="name">Name</label>
     <input id="name" name="name" type="text" class="form-control" required/>
   </div>
@@ -361,13 +363,13 @@ actually create the project in the `post '/projects/new'` method
 [form] through a [POST] request).
 
 Once users create a project, we then need a route to show the project.
-This will be `projects#show` route that we'll also use to create new
+This will be `get '/projects/:name'` route that we'll also use to create new
 projects.
 
 **Note that `/projects/new` changes to `/projects/:name` with `:name` being a variable.**
 **There's also a special case when `:name` is `new`**.
 
-### 2a. Implement projects#new route.
+### 2a. Implement new projects.
 
 Given users input the project `name` - we need to:
 
@@ -416,7 +418,7 @@ Tips:
 <br>
 
 <details>
-  <summary>full app.rb file</summary>
+  <summary>official solution - full app.rb file</summary>
 
 ```ruby
 # frozen_string_literal: true
@@ -442,7 +444,7 @@ class App < Sinatra::Base
 
   get '/' do
     logger.info('requsting the index')
-    @flash = { info: 'Welcome to Summer Institute!' }
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
     erb(:index)
   end
 
@@ -482,12 +484,12 @@ temp_variable = "#{projects_root}/#{dir}"
 FileUtils.mkdir_p(temp_variable)
 ```
 
-Now when you submit the [form] in the `projects#new` page - you'll find
+Now when you submit the [form] in the ` get '/projects/:name'` page - you'll find
 that the directory `./projects/<user input>` has been created. However,
 the application doesn't know how to respond to the `/projects/<user input>` route yet.
 We'll create this functionality in the next step.
 
-### 2b. Creating a projects#show page.
+### 2b. Creating a page for showing projects.
 
 Now that [POST] requests to `/projects/new` modify the system
 to create a project, we need the functionality to actually show that
@@ -905,7 +907,7 @@ Tips:
 
 
 <details>
-  <summary>official solution - addition to views/project_show.erb file.</summary>
+  <summary>official solution - addition to views/show_project.erb file.</summary>
 
 ```diff
 -Showing project at <%= @directory %>
@@ -930,13 +932,13 @@ Tips:
 +
 +      <div class="form-group col-md-4">
 +        <label for="num_cpus">CPUs</label>
-+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
++        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='4' required>
 +        <small class="form-text text-muted">More CPUs means less time rendering.</small>
 +      </div>
 +
 +      <div class="form-group col-md-4">
 +        <label for="frame_range">Frame Range (N-M)</label>
-+        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
++        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
 +        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
 +      </div>
 +
@@ -947,7 +949,7 @@ Tips:
 +      </div>
 +
 +      <div>
-+        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
++        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
 +      </div>
 +
 +    </div> <!-- end class="row" -->
@@ -964,7 +966,7 @@ Tips:
 <br>
 
 <details>
-  <summary>official solution - full views/project_show.erb file.</summary>
+  <summary>official solution - full views/show_project.erb file.</summary>
 
 ```html
 <form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
@@ -988,13 +990,13 @@ Tips:
 
       <div class="form-group col-md-4">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='4' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
       <div class="form-group col-md-4">
         <label for="frame_range">Frame Range (N-M)</label>
-        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
         <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
       </div>
 
@@ -1005,7 +1007,7 @@ Tips:
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -1333,13 +1335,13 @@ end
 
       <div class="form-group col-md-4">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='4' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
       <div class="form-group col-md-4">
         <label for="frame_range">Frame Range (N-M)</label>
-        <input id="frame_range" name="fram_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
         <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
       </div>
 
@@ -1350,7 +1352,7 @@ end
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -1587,14 +1589,15 @@ end
 
 ### 6a. Start the image carousel.
 
-Now that we can submit jobs, step 6 adds an image carousel to the `get /projects/:name`
+Now that we can submit jobs, step 6 adds an image carousel to the `get '/projects/:name'`
 page so that users can see the output of the render job.
 
 The official solution uses the [Bootstrap carousel] library to show the
 images on the page in a visually pleasing way.
 
-To complete this step we need to 
-  * Find all the images on the backend server
+To complete this step we need to:
+  * Find all the images on the backend server and assign the [Array]
+    to and [instance variable].
   * Use the [Bootstrap carousel] library to display all the images.
 
 Finding the images is as easy as using the [Dir] module to glob (use wildcards)
@@ -1651,8 +1654,7 @@ This works by:
     class when the index is zero.
   * The `@images` is an [Array] of full paths to the file.
     You can use `/pun/sys/dashboard/files/fs<%= image %>` as
-    the `src` attribute for the [img].
-
+    the [src] attribute for the [img].
 
 
 <details>
@@ -1667,7 +1669,7 @@ This works by:
 +    <div id="blend_image_carousel_inner" class="carousel-inner">
 +
 +      <%- @images.each_with_index do |image, index| -%>
-+      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
++      <div id="<%= File.basename(image) %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
 +        <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
 +      </div>
 +      <%- end -%>
@@ -1685,7 +1687,7 @@ This works by:
 
 ### 6b. Add carousel indicators.
 
-With the carousel created, you should see the images in the `get /projects/:name`
+With the carousel created, you should see the images in the `get '/projects/:name'`
 routes. The bootstrap [javascript] should be iterating through these images.
 
 That's all well and good, but should still enable a way for users to navigate
@@ -1697,11 +1699,21 @@ that users can click on to navigate to specific images.
 
 We'll add this [unordered list (ul)] as a sibling to the [div] with the [CSS Class] `carousel-inner`.
 
+So if we take the structure from step 6a and add this, it becomes:
+
 ```
-ol[class="carousel-indicators"]
-  <!-- loop start -->
-  li
-  <!-- loop end -->
+div[class="carousel slide" data-ride="carousel"]
+  div[class="carousel inner"]
+
+    <!-- loop over each image begin -->
+    div[class="carousel-item"] (the first image will also have class 'active')
+      img
+    <!-- loop end >
+
+    ol[class="carousel-indicators"]
+    <!-- loop over each image number begin -->
+      li[data-slide-to="the image number"] (the first indicator will have the class 'active')
+    <!-- loop end >
 ```
 
 This works by:
@@ -1728,8 +1740,10 @@ Tips:
   [HTML data attributes] to start at 0. So if you have 2 images, the
   `data-slide-to` attributes would be `0` and `1` not `1` and `2`.
 
+<br>
+
 <details>
-  <summary>official solution - addition to views/show_project.erb</summary>
+  <summary>official solution - update to views/show_project.erb file.</summary>
 
 ```diff
    <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
@@ -1921,7 +1935,7 @@ end
     <div id="blend_image_carousel_inner" class="carousel-inner">
 
       <%- @images.each_with_index do |image, index| -%>
-      <div id="image_<%= File.basename(image).gsub('.', '_') %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
+      <div id="<%= File.basename(image) %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
         <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
       </div>
       <%- end -%>
@@ -1971,7 +1985,7 @@ end
 
       <div class="form-group col-md-4">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="28" class="form-control" value='1' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='4' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
@@ -1988,7 +2002,7 @@ end
       </div>
 
       <div>
-        <input type="hidden" name="dir" id="dir" value="<%= @directory %>" required>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
       </div>
 
     </div> <!-- end class="row" -->
@@ -2260,16 +2274,15 @@ Tips:
        for(const file of files) {
 -        console.log(file);
 +
-+        const imageId = `${file.replaceAll('.', '_')}`;
-+        const image = document.getElementById(imageId);
++        const image = document.getElementById(file);
 +
 +        // image is already on the DOM so just return.
 +        if(image != null) {
-+          console.log(`skipping ${imageId} because it's already on the DOM.`);
++          console.log(`skipping ${file} because it's already on the DOM.`);
 +          continue;
 +        }
 +
-+        console.log(`adding ${imageId} to the DOM.`);
++        console.log(`adding ${file} to the DOM.`);
 +
        }
 +
@@ -2318,7 +2331,7 @@ Tips:
          console.log(`adding ${imageId} to the DOM.`);
  
 +        newImage = document.createElement('div');
-+        newImage.id = imageId;
++        newImage.id = file;
 +        newImage.classList.add('carousel-item');
 +        newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${directory}/${file}" >`;
 +
@@ -2452,6 +2465,112 @@ Tips:
        }
 ```
 
+### 7i. Edge case for first image.
+
+There is an edge case we have to account for and it's this:
+What happens when the page loads without any images and the [javascript]
+is adding the very first image?
+
+The answer is: nothing. This is becuase we need to apply the `active`
+[CSS Class] to the image if it's the very first image.
+
+Tips:
+* We have the variable `totalImages` which is the number of total
+  images. If it is `0` - then this is the first image and we need to
+  apply the [CSS Class] `active`.
+* `active` needs to be applied to both the [div] that holds the image
+  _and_ the [list item (li)] that is the indicator.
+* You can use the [classList] property to add the `active` class to
+  these elements.
+
+<details>
+  <summary>official solution - addition to the public/app.js file.</summary>
+
+```diff
+         const carousel = document.getElementById('blend_image_carousel_inner');
+ 
++        if(totalImages == 0){
++          newImage.classList.add('active');
++          newIndicator.classList.add('active');
++        }
++
+         carousel.append(newImage);
+         indicatorList.append(newIndicator);
+       }
+```
+</details>
+<br>
+<details>
+  <summary>official solution - full public/app.js file.</summary>
+
+```javascript
+
+jQuery(() => {
+  updateCarousel();
+});
+
+function updateCarousel() {
+  const configElement = document.getElementById('project_config');
+  if(configElement == null) {
+    return;
+  }
+
+  const directory = configElement.dataset.directory;
+
+  const url = `/pun/sys/dashboard/files/fs/${directory}`;
+  const options = {
+    headers: {
+      'Accept': 'application/json'
+    }
+  }
+
+  fetch(url, options)
+    .then(response => response.json())
+    .then(data => data['files'])
+    .then(files => files.map(file => file['name']))
+    .then(files => files.filter(file => file.endsWith('png')))
+    .then(files => {
+      for(const file of files) {
+        
+        const image = document.getElementById(file);
+
+        // image is already on the DOM so just return.
+        if(image != null) {
+          console.log(`skipping ${file} because it's already on the DOM.`);
+          continue;
+        }
+
+        console.log(`adding ${file} to the DOM.`);
+
+        newImage = document.createElement('div');
+        newImage.id = file;
+        newImage.classList.add('carousel-item');
+        newImage.innerHTML = `<img class="d-block w-100" src="/pun/sys/dashboard/files/fs/${directory}/${file}" >`;
+
+        const indicatorList = document.getElementById('blend_image_carousel_indicators');
+        const totalImages = indicatorList.children.length;
+        const newIndicator = document.createElement('li');
+        newIndicator.setAttribute('data-target', '#blend_image_carousel');
+        newIndicator.setAttribute('data-slide-to', totalImages);
+
+        const carousel = document.getElementById('blend_image_carousel_inner');
+
+        if(totalImages == 0){
+          newImage.classList.add('active');
+          newIndicator.classList.add('active');
+        }
+
+        carousel.append(newImage);
+        indicatorList.append(newIndicator);
+      }
+
+      setTimeout(updateCarousel, 30000);
+    });
+}
+```
+</details>
+<br>
+
 ## 8. Render a video.
 
 Now we have facilities to render frames which is great! However, frames
@@ -2478,7 +2597,7 @@ more to do. Here are a couple examples of things you can add to this application
       machine, get the program to render `1..50` on one machine and `51..100` on
       the other.  The environment variable `SLURM_ARRAY_TASK_ID` will be a different
       number for each machine you've requested.
-* Add the ability to change the project icon. Right now, every project icon in `projects#index`
+* Add the ability to change the project icon. Right now, every project icon in the index page
   is a camera (it's an icon - `i` - tag with `fas fa-fw fa-camera fa-5x` CSS classes).
   Make this configurable so that when you create a new project, you get to choose the icon.
     * Hint: google fontawesome for the entire list of icons you can use.
@@ -2547,6 +2666,7 @@ more to do. Here are a couple examples of things you can add to this application
 [map]: https://docs.ruby-lang.org/en/master/Enumerable.html#method-i-map
 [File]: https://docs.ruby-lang.org/en/master/File.html
 [format]: https://docs.ruby-lang.org/en/master/format_specifications_rdoc.html
+[src]: https://developer.mozilla.org/en-US/docs/Web/API/HTMLImageElement/src
 [Bootstrap]: https://getbootstrap.com/docs/4.0/getting-started/introduction/
 [Range]: https://docs.ruby-lang.org/en/master/Range.html
 [CSS Selector]: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_selectors
@@ -2560,3 +2680,4 @@ more to do. Here are a couple examples of things you can add to this application
 [createElement]: https://developer.mozilla.org/en-US/docs/Web/API/Document/createElement
 [classList]: https://developer.mozilla.org/en-US/docs/Web/API/Element/classList
 [template literals]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals
+[append]: https://developer.mozilla.org/en-US/docs/Web/API/Element/append
