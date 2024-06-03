@@ -894,6 +894,14 @@ form
         <field>.form-control
 ```
 
+
+This is the visual structure we're going for:
+
+||||
+| ------- | ------- | ------ |
+|    blend_file ||    account   |
+| num_cpus |frame_range|walltime|
+
 Tips:
 * As a first pass, you should put temporary values in the [select] options
   for `account` and `blend_file`.  We'll be updating this in later phases.
@@ -2581,9 +2589,423 @@ Step 8 creates another form for users to fill out to that will submit
 another job that will create an `mp4` video file out of all the images
 you've created.
 
-`add ability to render a video`
+### 8a. Video rendering form.
 
-https://github.com/OSC/summer-institute-base-web-app/commit/3320ba8665a371cf8a81d1c89f79512f45147f79
+We're going to need another [form] for users to fill out to
+submit another job.
+
+This form will need:
+* `account` is a [select] widget which is the same account from step 4a.
+* `frames_per_second` is a [number input] to define the frames 
+  per second the video is rendered with.
+* `num_cpus` will be a [number input] to define how many CPUs the
+  job will use just like in step 4a.
+* `walltime` is an [number input] to define the job's running
+  time just like in step 4a.
+* `project_directory` is a [hidden input] to define the proejct's
+  directory just like in step 4a.
+
+There are 4 visible [form] items for the user to fill out.
+For simplicity, we'll use `col-md-3` sizes for all [form]
+fields so that they all fit on the same row.
+
+This form will submit to a route that doesn't exist yet.
+It should submit to `url("/render/video")` which we will
+implement in the next step.
+
+Tips:
+* Many of these are already defined in the other form you
+  created in step 4a. Refer to them for guidance.
+* Remember that [form]s need an [action] and a [button].
+
+
+<details>
+  <summary>official solution - addition to views/show_project.erb</summary>
+
+```diff
+ <div id="project_config" class="d-none" data-directory="<%= @directory %>">
+ </div>
++
++<h2 class="my-2">Render Video</h2>
++
++<form action="<%= url("/render/video") %>" method="post">
++  <div class="col-md-12">
++    <div class="row">
++
++      <div class="form-group col-md-3">
++        <label for="account">Account</label>
++        <select name="account" id="account" class="form-control">
++          <%- accounts.each do |account| -%>
++          <option value="<%= account %>"><%= account %></option>
++          <%- end -%>
++        </select>
++      </div>
++
++      <div class="form-group col-md-3">
++        <label for="frames_per_second">Frames Per Second</label>
++        <input class="form-control" type="number" max="60" name="frames_per_second">
++      </div>
++
++      <div class="form-group col-md-3">
++        <label for="num_cpus">CPUs</label>
++        <input id="num_cpus" name="num_cpus" type="number" min="1" max="48" class="form-control" value='4' required>
++        <small class="form-text text-muted">More CPUs means less time rendering.</small>
++      </div>
++
++      <div class="form-group col-md-3">
++        <label for="walltime">Walltime</label>
++        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
++        <small class="form-text text-muted">Hours</small>
++      </div>
++
++      <div>
++        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
++      </div>
++
++    </div> <!-- row -->
++
++    <div class="row justify-content-md-end my-1">
++      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
++    </div>
++  </div>
++</form>
+```
+</details>
+<br>
+
+### 8b. Video rendering job.
+
+Just as before, we made the [form] before we made the route
+that can handle it.  Similar to the `post '/render/frames'`
+route, we need to make a `post '/render/videos'` route.
+
+This method will be very similar to the method in
+`post '/render/frames'` where we build an [sbatch]
+command to submit a job.
+
+The script we'll be submitting is `scripts/render_video.sh`.
+The [sbatch] command will use the input from 
+
+Once again, [sbatch] takes many command line arguments. Here's what 
+we'll be setting from the `params` variable the user provides in 
+the [form]:
+* `account` will set the `-A` flag.
+* `walltime` will set `-t` flag after being formatted to `HH:00:00`.
+* `num_cpus` will set `-n` flag.
+* `frames_per_second` will populate the `FRAMES_PER_SECOND` environment variable.
+* `project_directory` will populate the `OUTPUT_DIR` environment variable
+  and be used to set the job's output location for the `--output` flag.
+
+Tips:
+* Start small and build on what you have. You can start just by
+  defining the method, then flashing params. I.e., `@flash = params.inspect`.
+* Look at `post '/render/frames'` or step 4 for additional information on how
+  to issue a command in Ruby.
+
+<details>
+  <summary>official solution - addition to app.rb file.</summary>
+
+```diff
+     session[:flash] = { info: "made new project '#{params[:name]}'" }
+     redirect(url("/projects/#{dir}"))
+   end
++
++  post '/render/video' do
++    logger.info("Trying to render video with: #{params.inspect}")
++
++    output_dir = params[:project_directory]
++    frames_per_second = params[:frames_per_second]
++    walltime = format('%02d:00:00', params[:walltime])
++
++    args = ['-J', 'blender-video', '--parsable', '-A', params[:account]]
++    args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},OUTPUT_DIR=#{output_dir}"]
++    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
++    args.concat ['--output', "#{output_dir}/video-render-%j.out"]
++    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_video.sh 2>&1`
++
++    job_id = output.strip.split(';').first
++
++    session[:flash] = { info: "Submitted job #{job_id}"}
++    redirect(url("/projects/#{output_dir.split('/').last}"))
++  end
+ end
+```
+</details>
+<br>
+
+<details>
+  <summary>official solution - full app.rb file</summary>
+
+```ruby
+# frozen_string_literal: true
+
+require 'sinatra/base'
+require 'logger'
+
+# App is the main application where all your logic & routing will go
+class App < Sinatra::Base
+  set :erb, escape_html: true
+  enable :sessions
+
+  attr_reader :logger
+
+  def initialize
+    super
+    @logger = Logger.new('log/app.log')
+  end
+
+  def title
+    'Summer Instititue Starter App'
+  end
+
+  def project_dirs
+    Dir.children(projects_root).select do |path|
+      Pathname.new("#{projects_root}/#{path}").directory?
+    end.sort_by(&:to_s)
+  end
+
+  def accounts
+    Process.groups.map do |group_id|
+      Etc.getgrgid(group_id).name
+    end.select do |group|
+      group.start_with?('P')
+    end
+  end
+
+  def blend_files
+    Dir.glob("#{__dir__}/blend_files/*.blend").map do |f|
+      File.basename(f)
+    end
+  end
+
+  post '/render/frames' do
+    logger.info("rendering frames with #{params.inspect}")
+
+    blend_file = "#{__dir__}/blend_files/#{params[:blend_file]}"
+    walltime = format('%02d:00:00', params[:walltime])
+    dir = params[:project_directory]
+
+    args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
+    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{dir}/%j.out"]
+
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
+    job_id = output.strip.split(';').first
+
+    session[:flash] = { info: "submitted job #{job_id}" }
+    redirect(url("/projects/#{dir.split('/').last}"))
+  end
+
+  get '/' do
+    logger.info('requsting the index')
+    @flash = session.delete(:flash) || { info: 'Welcome to Summer Institute!' }
+    erb(:index)
+  end
+
+  get '/projects/:name' do
+    if params[:name] == 'new'
+      erb(:new_project)
+    else
+      @directory = Pathname.new("#{projects_root}/#{params[:name]}")
+      @project_name = @directory.basename.to_s.gsub('_', ' ').capitalize
+      @flash = session.delete(:flash)
+      @images = Dir.glob("#{@directory}/*.png")
+
+      if(@directory.directory? && @directory.readable?)
+        erb(:show_project)
+      else
+        session[:flash] = { danger: "#{@directory} does not exist" }
+        redirect(url('/'))
+      end
+
+    end
+  end
+
+  # helper function for the parent directory of all projects.
+  def projects_root
+    "#{__dir__}/projects"
+  end
+
+  post '/projects/new' do
+    dir = params[:name].downcase.gsub(' ', '_')
+
+    "#{projects_root}/#{dir}".tap { |d| FileUtils.mkdir_p(d) }
+
+    session[:flash] = { info: "made new project '#{params[:name]}'" }
+    redirect(url("/projects/#{dir}"))
+  end
+
+  post '/render/video' do
+    logger.info("Trying to render video with: #{params.inspect}")
+
+    output_dir = params[:project_directory]
+    frames_per_second = params[:frames_per_second]
+    walltime = format('%02d:00:00', params[:walltime])
+
+    args = ['-J', 'blender-video', '--parsable', '-A', params[:account]]
+    args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},OUTPUT_DIR=#{output_dir}"]
+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['--output', "#{output_dir}/video-render-%j.out"]
+    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_video.sh 2>&1`
+
+    job_id = output.strip.split(';').first
+
+    session[:flash] = { info: "Submitted job #{job_id}"}
+    redirect(url("/projects/#{output_dir.split('/').last}"))
+  end
+end
+```
+</details>
+<br>
+
+<details>
+  <summary>official solution - full views/show_project.erb file.</summary>
+
+```erb
+<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
+
+<div class="row my-3">
+
+  <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
+
+    <ol id="blend_image_carousel_indicators" class="carousel-indicators">
+      <% (1..@images.length).each do |index| %>
+      <li data-target="#blend_image_carousel" data-slide-to="<%= index-1 %>" class="<%= index == 1 ? 'active' : nil %>" ></li>
+      <% end %>
+    </ol>
+
+    <div id="blend_image_carousel_inner" class="carousel-inner">
+
+      <%- @images.each_with_index do |image, index| -%>
+      <div id="<%= File.basename(image) %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
+        <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
+      </div>
+      <%- end -%>
+
+    </div> <!-- carousel inner -->
+
+    <a class="carousel-control-prev" href="#blend_image_carousel" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+
+    <a class="carousel-control-next" href="#blend_image_carousel" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+
+  </div><!-- carousel -->
+
+</div>
+
+
+<h2>Render Frames</h2>
+
+<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+  <div class="col-md-12">
+    <div class="row">
+
+      <div class="form-group col-md-6">
+        <label for="blend_file">Blend File</label>
+        <select name="blend_file" id="blend_file" class="form-control">
+          <%- blend_files.each do |file| -%>
+          <option value="<%= file %>"><%= file %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+      <div class="form-group col-md-6">
+        <label for="account">Account</label>
+        <select name="account" id="account" class="form-control">
+          <%- accounts.each do |account| -%>
+          <option value="<%= account %>"><%= account %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+
+      <div class="form-group col-md-4">
+        <label for="num_cpus">CPUs</label>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='4' required>
+        <small class="form-text text-muted">More CPUs means less time rendering.</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="frame_range">Frame Range (N-M)</label>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="walltime">Walltime</label>
+        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
+        <small class="form-text text-muted">Hours</small>
+      </div>
+
+      <div>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
+      </div>
+
+    </div> <!-- end class="row" -->
+
+    <div class="row justify-content-md-end my-1">
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+    </div>
+  </div>
+
+</form>
+
+<div id="project_config" class="d-none" data-directory="<%= @directory %>">
+</div>
+
+<h2 class="my-2">Render Video</h2>
+
+<form action="<%= url("/render/video") %>" method="post">
+  <div class="col-md-12">
+    <div class="row">
+
+      <div class="form-group col-md-3">
+        <label for="account">Account</label>
+        <select name="account" id="account" class="form-control">
+          <%- accounts.each do |account| -%>
+          <option value="<%= account %>"><%= account %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+      <div class="form-group col-md-3">
+        <label for="frames_per_second">Frames Per Second</label>
+        <input class="form-control" type="number" max="60" name="frames_per_second">
+      </div>
+
+      <div class="form-group col-md-3">
+        <label for="num_cpus">CPUs</label>
+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="48" class="form-control" value='4' required>
+        <small class="form-text text-muted">More CPUs means less time rendering.</small>
+      </div>
+
+      <div class="form-group col-md-3">
+        <label for="walltime">Walltime</label>
+        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
+        <small class="form-text text-muted">Hours</small>
+      </div>
+
+      <div>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
+      </div>
+
+    </div> <!-- row -->
+
+    <div class="row justify-content-md-end my-1">
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+    </div>
+  </div>
+</form>
+```
+</details>
+<br>
 
 ## 9. Extra credit and beyond.
 
@@ -2601,7 +3023,7 @@ more to do. Here are a couple examples of things you can add to this application
   is a camera (it's an icon - `i` - tag with `fas fa-fw fa-camera fa-5x` CSS classes).
   Make this configurable so that when you create a new project, you get to choose the icon.
     * Hint: google fontawesome for the entire list of icons you can use.
-
+* Once you've completed stop 8, you can additionally display the video on the webpage.
 
 [form]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form
 [list item (li)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li
