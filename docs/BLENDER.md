@@ -894,6 +894,14 @@ form
         <field>.form-control
 ```
 
+
+This is the visual structure we're going for:
+
+||||
+| ------- | ------- | ------ |
+|    blend_file ||    account   |
+| num_cpus |frame_range|walltime|
+
 Tips:
 * As a first pass, you should put temporary values in the [select] options
   for `account` and `blend_file`.  We'll be updating this in later phases.
