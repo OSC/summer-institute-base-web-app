@@ -3024,6 +3024,13 @@ more to do. Here are a couple examples of things you can add to this application
   Make this configurable so that when you create a new project, you get to choose the icon.
     * Hint: google fontawesome for the entire list of icons you can use.
 * Once you've completed stop 8, you can additionally display the video on the webpage.
+* Add the ability to track jobs. Once the job is created, the status of the job
+  is not indicated on these pages. This makes the user navigate away from this page
+  to see the job's status. This extra credit work would add the ability to track the
+  jobs you submit through the [form]s.
+    * Hint: Save the job id to a file that you can read back later.
+    * Hint: Use the [squeue] command to query for the state of the job.
+
 
 [form]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/form
 [list item (li)]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/li
@@ -3053,6 +3060,7 @@ more to do. Here are a couple examples of things you can add to this application
 [heading elements]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Heading_Elements
 [HPC]: https://en.wikipedia.org/wiki/High-performance_computing
 [sbatch]: https://slurm.schedmd.com/sbatch.html
+[squeue]: https://slurm.schedmd.com/squeue.html
 [Bootstrap carousel]: https://getbootstrap.com/docs/4.0/components/carousel/
 [Array]: https://docs.ruby-lang.org/en/master/Array.html
 [div]: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/div
