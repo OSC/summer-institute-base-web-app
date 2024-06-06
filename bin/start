@@ -6,4 +6,6 @@ $SCRIPT_DIR/setup
 
 cd $SCRIPT_DIR/..
 
+export RACK_ENV='development'
+
 bundle exec rackup -p9001
