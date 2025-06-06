@@ -7,6 +7,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
