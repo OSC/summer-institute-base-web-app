@@ -29,7 +29,7 @@ GEM
     rackup (2.1.0)
       rack (>= 3)
       webrick (~> 1.8)
-    rexml (3.3.9)
+    rexml (3.4.2)
     ruby2_keywords (0.0.5)
     sinatra (4.1.0)
       logger (>= 1.6.0)
