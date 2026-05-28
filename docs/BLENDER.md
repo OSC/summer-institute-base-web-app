@@ -137,11 +137,15 @@ ul (already exists)
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item active">
+            <a href="<%= url("/examples") %>" class="nav-link">
+              <i class="fas fa-code"></i> Examples
+            </a>
+          </li>
+          <li class="nav-item active">
             <a href="<%= url("/") %>" class="nav-link">
               <i class="fas fa-home"></i> <%= title %>
             </a>
           </li>
-
           <li class="nav-item active">
             <a href="<%= url('/projects/new') %>" class="nav-link">
               <i class="fas fa-camera"></i> New Project
@@ -296,6 +300,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -306,6 +311,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   get '/' do
@@ -430,6 +439,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -440,6 +450,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   get '/' do
@@ -597,6 +611,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -607,6 +622,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   get '/' do
