@@ -611,6 +611,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -621,6 +622,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   get '/' do
