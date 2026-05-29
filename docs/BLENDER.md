@@ -696,7 +696,7 @@ list alphabetically is just a nice thing to do.
 
 
 ```diff
-     'Summer Instititue Starter App'
+     erb(:examples)
    end
 
 +  def project_dirs
@@ -779,6 +779,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -789,6 +790,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   def project_dirs
@@ -1255,6 +1260,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -1265,6 +1271,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   def project_dirs
@@ -1519,6 +1529,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -1529,6 +1540,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   def project_dirs
@@ -1849,6 +1864,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -1859,6 +1875,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   def project_dirs
@@ -2596,6 +2616,110 @@ function updateCarousel() {
 }
 ```
 </details>
+<br>
+<details>
+  <summary>official solution - full view/show_project.erb</summary>
+
+```erb
+<h1 class='d-flex my-2 justify-content-center'><%= @project_name %></h1>
+
+<div class="row my-3">
+
+  <div id="blend_image_carousel" class="carousel slide" data-ride="carousel">
+
+    <ol id="blend_image_carousel_indicators" class="carousel-indicators">
+      <% (1..@images.length).each do |index| %>
+      <li data-target="#blend_image_carousel" data-slide-to="<%= index-1 %>" class="<%= index == 1 ? 'active' : nil %>" ></li>
+      <% end %>
+    </ol>
+
+    <div id="blend_image_carousel_inner" class="carousel-inner">
+
+      <%- @images.each_with_index do |image, index| -%>
+      <div id="<%= File.basename(image) %>" class="carousel-item <%= index == 0 ? 'active' : nil %>">
+        <img class="d-block w-100" src="/pun/sys/dashboard/files/fs<%= image %>">
+      </div>
+      <%- end -%>
+
+    </div> <!-- carousel inner -->
+
+    <a class="carousel-control-prev" href="#blend_image_carousel" role="button" data-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="sr-only">Previous</span>
+    </a>
+
+    <a class="carousel-control-next" href="#blend_image_carousel" role="button" data-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="sr-only">Next</span>
+    </a>
+
+  </div><!-- carousel -->
+
+</div>
+
+
+<h2>Render Frames</h2>
+
+<form action="<%= url("/render/frames") %>" method="post" enctype="multipart/form-data">
+
+  <div class="col-md-12">
+    <div class="row">
+
+      <div class="form-group col-md-6">
+        <label for="blend_file">Blend File</label>
+        <select name="blend_file" id="blend_file" class="form-control">
+          <%- blend_files.each do |file| -%>
+          <option value="<%= file %>"><%= file %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+      <div class="form-group col-md-6">
+        <label for="account">Account</label>
+        <select name="account" id="account" class="form-control">
+          <%- accounts.each do |account| -%>
+          <option value="<%= account %>"><%= account %></option>
+          <%- end -%>
+        </select>
+      </div>
+
+
+      <div class="form-group col-md-4">
+        <label for="num_cpus">CPUs</label>
+        <input id="num_cpus" name="num_cpus" type="number" min="4" max="48" class="form-control" value='4' required>
+        <small class="form-text text-muted">More CPUs means less time rendering.</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="frame_range">Frame Range (N-M)</label>
+        <input id="frame_range" name="frame_range" type="text" class="form-control" pattern="(\d+\.\.\d+)|(\d+(?:,\d+)*)" required>
+        <small class="form-text text-muted">Ex: "1..10" renders frames 1-10, "1,3,5" renders frames 1, 3 and 5...</small>
+      </div>
+
+      <div class="form-group col-md-4">
+        <label for="walltime">Walltime</label>
+        <input type="number" id="walltime" name="walltime" class="form-control" value="1" min="1" max="48">
+        <small class="form-text text-muted">Hours</small>
+      </div>
+
+      <div>
+        <input type="hidden" name="project_directory" id="project_directory" value="<%= @directory %>" required>
+      </div>
+
+    </div> <!-- end class="row" -->
+
+    <div class="row justify-content-md-end my-1">
+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+    </div>
+  </div>
+
+</form>
+
+<div class='d-none' id="project_config" data-directory="<%= @directory %>">
+</div>
+```
+</details>
+
 <br>
 
 ## 8. Render a video.
