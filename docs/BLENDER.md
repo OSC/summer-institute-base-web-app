@@ -1450,6 +1450,7 @@ from the `params` variable the user provides in the [form]:
   * `project_directory` will populate the `OUTPUT_DIR` environment variable
     and be used to set the job's output location for the `--output` flag.
   * `frame_range` will populate the `FRAME_RANGE` environment variable.
+  * We can hard code the number of nodes (machines) to be `1` through the `-N` flag.
   * We can hard code the cluster to be `pitzer` through the `-M` flag.
   * You should also hard code the `--parseable` flag so that the command
     output is parseable.
@@ -1500,7 +1501,7 @@ Tips:
 +
 +    args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
 +    args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
-+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
++    args.concat ['-n', params[:num_cpus], '-N', '1', '-t', walltime, '-M', 'pitzer']
 +    args.concat ['--output', "#{dir}/%j.out"]
 +
 +    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
@@ -1575,7 +1576,7 @@ class App < Sinatra::Base
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
-    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['-n', params[:num_cpus], '-N', '1', '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/%j.out"]
 
     output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
@@ -1910,7 +1911,7 @@ class App < Sinatra::Base
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
-    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['-n', params[:num_cpus], '-N', '1', '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/%j.out"]
 
     output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
@@ -2862,7 +2863,7 @@ Tips:
 +
 +    args = ['-J', 'blender-video', '--parsable', '-A', params[:account]]
 +    args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},OUTPUT_DIR=#{output_dir}"]
-+    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
++    args.concat ['-n', params[:num_cpus], '-N', '1', '-t', walltime, '-M', 'pitzer']
 +    args.concat ['--output', "#{output_dir}/video-render-%j.out"]
 +    output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_video.sh 2>&1`
 +
@@ -2930,7 +2931,7 @@ class App < Sinatra::Base
 
     args = ['-J', "blender-#{params[:blend_file]}", '--parsable', '-A', params[:account]]
     args.concat ['--export', "BLEND_FILE_PATH=#{blend_file},OUTPUT_DIR=#{dir},FRAME_RANGE=#{params[:frame_range]}"]
-    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['-n', params[:num_cpus], '-N', '1', '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{dir}/%j.out"]
 
     output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_frames.sh 2>&1`
@@ -2988,7 +2989,7 @@ class App < Sinatra::Base
 
     args = ['-J', 'blender-video', '--parsable', '-A', params[:account]]
     args.concat ['--export', "FRAMES_PER_SEC=#{frames_per_second},OUTPUT_DIR=#{output_dir}"]
-    args.concat ['-n', params[:num_cpus], '-t', walltime, '-M', 'pitzer']
+    args.concat ['-n', params[:num_cpus], '-N', '1', '-t', walltime, '-M', 'pitzer']
     args.concat ['--output', "#{output_dir}/video-render-%j.out"]
     output = `/bin/sbatch #{args.join(' ')}  #{__dir__}/scripts/render_video.sh 2>&1`
 
