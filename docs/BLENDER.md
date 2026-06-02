@@ -2792,7 +2792,7 @@ Tips:
 +
 +      <div class="form-group col-md-3">
 +        <label for="num_cpus">CPUs</label>
-+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="48" class="form-control" value='4' required>
++        <input id="num_cpus" name="num_cpus" type="number" min="1" max="48" class="form-control" value='1' required>
 +        <small class="form-text text-muted">More CPUs means less time rendering.</small>
 +      </div>
 +
@@ -2809,7 +2809,7 @@ Tips:
 +    </div> <!-- row -->
 +
 +    <div class="row justify-content-md-end my-1">
-+      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
++      <button type="submit" class="btn btn-primary float-right">Render Video</button>
 +    </div>
 +  </div>
 +</form>
@@ -2890,6 +2890,7 @@ require 'logger'
 class App < Sinatra::Base
   set :erb, escape_html: true
   enable :sessions
+  set :host_authorization, { permitted_hosts: ['ondemand.osc.edu'] }
 
   attr_reader :logger
 
@@ -2900,6 +2901,10 @@ class App < Sinatra::Base
 
   def title
     'Summer Instititue Starter App'
+  end
+
+  get '/examples' do
+    erb(:examples)
   end
 
   def project_dirs
@@ -3126,7 +3131,7 @@ end
 
       <div class="form-group col-md-3">
         <label for="num_cpus">CPUs</label>
-        <input id="num_cpus" name="num_cpus" type="number" min="1" max="48" class="form-control" value='4' required>
+        <input id="num_cpus" name="num_cpus" type="number" min="1" max="48" class="form-control" value='1' required>
         <small class="form-text text-muted">More CPUs means less time rendering.</small>
       </div>
 
@@ -3143,7 +3148,7 @@ end
     </div> <!-- row -->
 
     <div class="row justify-content-md-end my-1">
-      <button type="submit" class="btn btn-primary float-right">Render Frames</button>
+      <button type="submit" class="btn btn-primary float-right">Render Video</button>
     </div>
   </div>
 </form>
